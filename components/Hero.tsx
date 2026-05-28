@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden px-4 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+    <section className="relative overflow-hidden px-4 pt-16 sm:px-6 lg:px-8 lg:pt-24">
       <div className="absolute inset-x-0 top-0 -z-10 mx-auto h-[34rem] max-w-6xl bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.18),_transparent_55%),radial-gradient(circle_at_left,_rgba(124,58,237,0.08),_transparent_40%),radial-gradient(circle_at_right,_rgba(24,24,27,0.05),_transparent_36%)] dark:bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.22),_transparent_55%),radial-gradient(circle_at_left,_rgba(124,58,237,0.12),_transparent_40%),radial-gradient(circle_at_right,_rgba(255,255,255,0.04),_transparent_36%)]" />
 
       <div className="absolute left-1/2 top-14 -z-10 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-600/10 blur-3xl animate-drift" />
@@ -21,16 +21,16 @@ export function Hero() {
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="#products"
+            href="/products"
             className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-6 text-sm font-medium text-white transition hover:bg-violet-500"
           >
             Browse Products
           </Link>
           <Link
-            href="#features"
+            href="/guides"
             className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-950 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
           >
-            See what&apos;s inside
+            Learn more
           </Link>
         </div>
 

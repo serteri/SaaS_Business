@@ -1,8 +1,11 @@
 import Link from "next/link";
 
-const productLinks = ["AI Tools", "PDF Guides", "Notion Templates"];
-const companyLinks = ["About", "Pricing", "Contact"];
-const legalLinks = ["Terms", "Privacy", "Refunds"];
+const footerLinks = [
+  { label: "Products", href: "/products" },
+  { label: "Tools", href: "/tools" },
+  { label: "Guides", href: "/guides" },
+  { label: "Pricing", href: "/pricing" },
+];
 
 function SocialIcon({ label }: { label: string }) {
   return (
@@ -18,9 +21,9 @@ function SocialIcon({ label }: { label: string }) {
 export function Footer() {
   return (
     <footer className="bg-zinc-900 px-4 py-16 text-zinc-300 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.3fr_1fr_1fr]">
         <div>
-          <Link href="#top" className="text-lg font-semibold tracking-tight text-white">
+          <Link href="/" className="text-lg font-semibold tracking-tight text-white">
             ToolHub
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-400">
@@ -29,12 +32,12 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Products</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Explore</h3>
           <ul className="mt-4 space-y-3 text-sm">
-            {productLinks.map((link) => (
-              <li key={link}>
-                <Link href="#products" className="transition hover:text-white">
-                  {link}
+            {footerLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="transition hover:text-white">
+                  {link.label}
                 </Link>
               </li>
             ))}
@@ -42,31 +45,9 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Company</h3>
-          <ul className="mt-4 space-y-3 text-sm">
-            {companyLinks.map((link) => (
-              <li key={link}>
-                <Link href="#top" className="transition hover:text-white">
-                  {link}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Social</h3>
 
-        <div>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Legal</h3>
-          <ul className="mt-4 space-y-3 text-sm">
-            {legalLinks.map((link) => (
-              <li key={link}>
-                <Link href="#top" className="transition hover:text-white">
-                  {link}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-8 flex gap-3">
+          <div className="mt-4 flex gap-3">
             <Link href="https://x.com" className="inline-flex" aria-label="Twitter / X">
               <SocialIcon label="Twitter / X" />
             </Link>
@@ -83,3 +64,4 @@ export function Footer() {
     </footer>
   );
 }
+
