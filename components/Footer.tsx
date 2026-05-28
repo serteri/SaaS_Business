@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const footerLinks = [
-  { label: "Products", href: "/products" },
-  { label: "Tools", href: "/tools" },
-  { label: "Guides", href: "/guides" },
+  { label: "Home", href: "/" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Sign in", href: "/signin" },
+  { label: "Dashboard", href: "/dashboard" },
 ];
 
 function SocialIcon({ label }: { label: string }) {
@@ -27,7 +27,7 @@ export function Footer() {
             ToolHub
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-400">
-            Practical digital products for independent founders who want to ship, sell and scale with less noise.
+            AI-powered invoicing communication tools for freelancers and small businesses.
           </p>
         </div>
 

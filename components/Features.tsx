@@ -1,25 +1,29 @@
 const features = [
   {
-    title: "Built for solo builders",
-    description: "Lightweight tools that solve one problem really well.",
+    title: "Add your invoice details",
+    description: "Enter client information, invoice amount, due date, and payment link.",
     icon: "01",
   },
   {
-    title: "Instant access",
-    description: "Download or start using everything immediately after purchase.",
+    title: "Choose the situation and tone",
+    description: "Pick from overdue scenarios and set the right voice from friendly to formal/legal.",
     icon: "02",
   },
   {
-    title: "Constantly updated",
-    description: "New products ship every month so the library keeps growing.",
+    title: "Send polished reminders",
+    description: "Generate, copy, and track every payment email from one dashboard.",
     icon: "03",
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        <div className="mb-10 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">How it works</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Three steps to get paid sooner</h2>
+        </div>
         <div className="grid gap-5 lg:grid-cols-3">
           {features.map((feature) => (
             <div

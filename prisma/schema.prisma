@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  BASIC
+  PRO
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  CANCELED
+  PAST_DUE
+}
+
+model User {
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  name               String?
+  passwordHash       String?
+  image              String?
+  stripeCustomerId   String?              @unique
+  subscriptionStatus SubscriptionStatus   @default(FREE)
+  plan               Plan                 @default(BASIC)
+  createdAt          DateTime             @default(now())
+  emailGenerations   EmailGeneration[]
+  usageTracking      UsageTracking[]
+}
+
+model EmailGeneration {
+  id             String   @id @default(cuid())
+  userId         String
+  invoiceNumber  String
+  clientName     String
+  amount         String
+  daysOverdue    Int
+  tone           String
+  generatedEmail String
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UsageTracking {
+  id         String   @id @default(cuid())
+  userId     String
+  month      String
+  emailCount Int      @default(0)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+}
