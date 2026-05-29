@@ -1,16 +1,50 @@
 "use client";
 
+import { IconSend } from "@tabler/icons-react";
 import { toast } from "sonner";
 
 type EmailOutputProps = {
   content: string;
+  clientEmail?: string;
   saved: boolean;
   saving?: boolean;
   onSave?: () => void;
 };
 
-export function EmailOutput({ content, saved, saving = false, onSave }: EmailOutputProps) {
+function getSubjectAndBody(rawContent: string) {
+  const lines = rawContent.split("\n");
+  const subjectLine = lines.find((line) => /^subject\s*:/i.test(line.trim()));
+
+  if (!subjectLine) {
+    return {
+      subject: "Payment reminder",
+      body: rawContent,
+    };
+  }
+
+  const subject = subjectLine.replace(/^subject\s*:/i, "").trim() || "Payment reminder";
+  const body = lines.filter((line) => line !== subjectLine).join("\n").trim();
+
+  return {
+    subject,
+    body: body || rawContent,
+  };
+}
+
+export function EmailOutput({ content, clientEmail = "", saved, saving = false, onSave }: EmailOutputProps) {
   const charCount = content.length;
+
+  function openEmailClient() {
+    if (!content.trim()) {
+      toast.error("Generate an email first.");
+      return;
+    }
+
+    const { subject, body } = getSubjectAndBody(content);
+    const to = clientEmail.trim();
+    const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  }
 
   async function copyToClipboard() {
     try {
@@ -49,6 +83,14 @@ export function EmailOutput({ content, saved, saving = false, onSave }: EmailOut
             className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-100"
           >
             Copy
+          </button>
+          <button
+            type="button"
+            onClick={openEmailClient}
+            className="inline-flex items-center gap-1 rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-100"
+          >
+            <IconSend size={14} />
+            Send Email
           </button>
         </div>
       </div>

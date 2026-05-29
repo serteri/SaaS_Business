@@ -24,6 +24,7 @@ export function EmailForm() {
   const [limitReached, setLimitReached] = useState(false);
 
   const [formValues, setFormValues] = useState({
+    clientEmail: "",
     clientName: "",
     invoiceNumber: "",
     amount: "",
@@ -123,6 +124,16 @@ export function EmailForm() {
     <div className="grid gap-6 lg:grid-cols-2">
       <form onSubmit={onGenerate} className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="text-xl font-semibold">Generate new email</h2>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">Client Email (optional)</label>
+          <input
+            type="email"
+            value={formValues.clientEmail}
+            onChange={(event) => setFormValues((prev) => ({ ...prev, clientEmail: event.target.value }))}
+            className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+          />
+        </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium">Client Name</label>
@@ -251,7 +262,13 @@ export function EmailForm() {
         ) : null}
       </form>
 
-      <EmailOutput content={generatedEmail} saved={saved} saving={saving} onSave={onSaveToHistory} />
+      <EmailOutput
+        content={generatedEmail}
+        clientEmail={formValues.clientEmail}
+        saved={saved}
+        saving={saving}
+        onSave={onSaveToHistory}
+      />
     </div>
   );
 }
