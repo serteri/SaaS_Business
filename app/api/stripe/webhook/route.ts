@@ -28,15 +28,113 @@ function mapStripeStatus(status: string): SubscriptionStatus {
   return SubscriptionStatus.CANCELED;
 }
 
-async function handleSubscriptionEvent(subscription: Stripe.Subscription) {
+async function handleSubscriptionCreatedOrUpdated(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
-  const plan = mapPriceToPlan(subscription.items.data[0]?.price?.id);
-  const subscriptionStatus = mapStripeStatus(subscription.status);
+  const priceId = subscription.items.data[0]?.price?.id;
+  const plan = mapPriceToPlan(priceId);
 
-  await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
-    data: { plan, subscriptionStatus },
+  console.log("[stripe-webhook] subscription created/updated received", {
+    customerId,
+    priceId,
+    mappedPlan: plan,
+    stripeStatus: subscription.status,
   });
+
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true, email: true },
+  });
+
+  if (!user) {
+    console.warn("[stripe-webhook] no user found for stripeCustomerId", { customerId });
+    return;
+  }
+
+  console.log("[stripe-webhook] user found for update", {
+    userId: user.id,
+    email: user.email,
+  });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      plan,
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
+    },
+  });
+
+  console.log("[stripe-webhook] user plan/status updated", {
+    userId: user.id,
+    plan,
+    subscriptionStatus: SubscriptionStatus.ACTIVE,
+  });
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+  const mappedStatus = mapStripeStatus(subscription.status);
+
+  console.log("[stripe-webhook] subscription deleted received", {
+    customerId,
+    stripeStatus: subscription.status,
+    mappedStatus,
+  });
+
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true, email: true },
+  });
+
+  if (!user) {
+    console.warn("[stripe-webhook] no user found for stripeCustomerId on delete", { customerId });
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      subscriptionStatus: mappedStatus,
+    },
+  });
+
+  console.log("[stripe-webhook] user subscription status updated", {
+    userId: user.id,
+    subscriptionStatus: mappedStatus,
+  });
+}
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  console.log("[stripe-webhook] checkout.session.completed received", {
+    customer: session.customer,
+    metadataPlan: session.metadata?.plan,
+  });
+
+  if (!session.customer || typeof session.customer !== "string") {
+    console.warn("[stripe-webhook] checkout session has no string customer id");
+    return;
+  }
+
+  const plan = mapMetadataPlan(session.metadata?.plan);
+
+  const updated = await prisma.user.updateMany({
+    where: { stripeCustomerId: session.customer },
+    data: {
+      plan,
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
+    },
+  });
+
+  console.log("[stripe-webhook] checkout completion update result", {
+    customerId: session.customer,
+    updatedCount: updated.count,
+    plan,
+    subscriptionStatus: SubscriptionStatus.ACTIVE,
+  });
+}
+
+function summarizeRawBody(payload: string) {
+  const normalized = payload.replace(/\s+/g, " ");
+  return normalized.length > 400 ? `${normalized.slice(0, 400)}...` : normalized;
 }
 
 export async function POST(request: Request) {
@@ -54,40 +152,43 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.text();
+    console.log("[stripe-webhook] raw body:", summarizeRawBody(payload));
+    console.log("[stripe-webhook] signature header:", signature);
+
+    console.log("Webhook received:", "pending_verification");
     let event: Stripe.Event;
 
     try {
       event = stripe.webhooks.constructEvent(payload, signature, secret);
-    } catch {
+    } catch (error) {
+      console.error("[stripe-webhook] signature verification failed", error);
       return NextResponse.json({ error: "Invalid webhook signature." }, { status: 400 });
     }
 
+    console.log("Webhook received:", event.type);
+
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        if (session.customer && typeof session.customer === "string") {
-          await prisma.user.updateMany({
-            where: { stripeCustomerId: session.customer },
-            data: {
-              plan: mapMetadataPlan(session.metadata?.plan),
-              subscriptionStatus: SubscriptionStatus.ACTIVE,
-            },
-          });
-        }
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       }
       case "customer.subscription.created":
-      case "customer.subscription.updated":
+      case "customer.subscription.updated": {
+        await handleSubscriptionCreatedOrUpdated(event.data.object as Stripe.Subscription);
+        break;
+      }
       case "customer.subscription.deleted": {
-        await handleSubscriptionEvent(event.data.object as Stripe.Subscription);
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
       }
       default:
+        console.log("[stripe-webhook] unhandled event type", event.type);
         break;
     }
 
     return NextResponse.json({ received: true });
-  } catch {
+  } catch (error) {
+    console.error("[stripe-webhook] handler failed", error);
     return NextResponse.json({ error: "Webhook handling failed." }, { status: 500 });
   }
 }
