@@ -9,7 +9,7 @@ export function Hero() {
       <div className="absolute right-0 top-32 -z-10 h-64 w-64 rounded-full bg-zinc-200/70 blur-3xl dark:bg-zinc-800/40 animate-drift-slow" />
 
       <div className="mx-auto max-w-4xl py-12 text-center sm:py-16 lg:py-20 animate-fade-up">
-        <p className="mb-5 text-sm font-medium uppercase tracking-[0.25em] text-violet-600">Invoice Reminder Writer</p>
+        <p className="mb-5 text-sm font-medium uppercase tracking-[0.25em] text-violet-600">Ongonix</p>
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl lg:text-7xl dark:text-white">
           Get paid faster. Write better payment reminders.
         </h1>

@@ -24,7 +24,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.3fr_1fr_1fr]">
         <div>
           <Link href="/" className="text-lg font-semibold tracking-tight text-white">
-            ToolHub
+            Ongonix
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-400">
             AI-powered invoicing communication tools for freelancers and small businesses.
@@ -59,7 +59,7 @@ export function Footer() {
       </div>
 
       <div className="mx-auto mt-14 max-w-7xl border-t border-zinc-800 pt-6 text-sm text-zinc-500">
-        © 2026 ToolHub. All rights reserved.
+        © 2026 Ongonix. All rights reserved.
       </div>
     </footer>
   );
