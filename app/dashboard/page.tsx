@@ -15,10 +15,10 @@ export default async function DashboardPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { plan: true },
+    select: { plan: true, subscriptionStatus: true },
   });
 
-  const plan = user?.plan ?? Plan.BASIC;
+  const plan = user?.subscriptionStatus === "ACTIVE" ? user.plan : Plan.FREE;
   const usage = await getUsageForUser(userId, plan);
 
   const recentEmails = await prisma.emailGeneration.findMany({

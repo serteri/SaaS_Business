@@ -110,7 +110,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.plan = (token.plan as "BASIC" | "PRO") ?? "BASIC";
+        session.user.plan = (token.plan as "FREE" | "BASIC" | "PRO") ?? "FREE";
         session.user.subscriptionStatus =
           (token.subscriptionStatus as "FREE" | "ACTIVE" | "CANCELED" | "PAST_DUE") ?? "FREE";
       }

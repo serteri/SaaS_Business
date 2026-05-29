@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,14 +10,34 @@ type PricingCardProps = {
   period: string;
   description: string;
   features: string[];
-  plan: "BASIC" | "PRO";
+  plan?: "BASIC" | "PRO";
+  buttonLabel: string;
+  buttonDisabled?: boolean;
+  buttonHref?: string;
+  badge?: string;
   highlighted?: boolean;
 };
 
-export function PricingCard({ title, price, period, description, features, plan, highlighted = false }: PricingCardProps) {
+export function PricingCard({
+  title,
+  price,
+  period,
+  description,
+  features,
+  plan,
+  buttonLabel,
+  buttonDisabled = false,
+  buttonHref,
+  badge,
+  highlighted = false,
+}: PricingCardProps) {
   const [loading, setLoading] = useState(false);
 
   async function handleCheckout() {
+    if (!plan) {
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch("/api/stripe/create-checkout", {
@@ -46,6 +67,9 @@ export function PricingCard({ title, price, period, description, features, plan,
           : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
       }`}
     >
+      {badge ? (
+        <div className="mb-3 inline-flex rounded-full bg-violet-600 px-3 py-1 text-xs font-medium text-white">{badge}</div>
+      ) : null}
       <h3 className="text-2xl font-semibold">{title}</h3>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{description}</p>
       <div className="mt-6 flex items-end gap-1">
@@ -62,14 +86,23 @@ export function PricingCard({ title, price, period, description, features, plan,
         ))}
       </ul>
 
-      <button
-        type="button"
-        onClick={handleCheckout}
-        disabled={loading}
-        className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-zinc-950"
-      >
-        {loading ? "Redirecting..." : `Choose ${title}`}
-      </button>
+      {buttonHref ? (
+        <Link
+          href={buttonHref}
+          className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950"
+        >
+          {buttonLabel}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          onClick={handleCheckout}
+          disabled={loading || buttonDisabled}
+          className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-zinc-950"
+        >
+          {loading ? "Redirecting..." : buttonLabel}
+        </button>
+      )}
     </article>
   );
 }

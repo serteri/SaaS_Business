@@ -43,7 +43,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const usage = await getUsageForUser(user.id, user.plan as Plan);
+    const effectivePlan = user.subscriptionStatus === "ACTIVE" ? (user.plan as Plan) : Plan.FREE;
+    const usage = await getUsageForUser(user.id, effectivePlan);
     if (!usage.canGenerate) {
       return NextResponse.json(
         { error: "Monthly email limit reached. Upgrade to Pro for unlimited emails.", limitReached: true },
@@ -99,7 +100,7 @@ Write one complete email ready to send.`;
     });
 
     await incrementUsage(user.id, getCurrentMonthKey());
-    const freshUsage = await getUsageForUser(user.id, user.plan as Plan);
+    const freshUsage = await getUsageForUser(user.id, effectivePlan);
 
     return NextResponse.json({
       generatedEmail,

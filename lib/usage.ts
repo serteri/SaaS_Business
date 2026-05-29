@@ -2,6 +2,7 @@ import { Plan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentMonthKey } from "@/lib/month";
 
+const FREE_LIMIT = 3;
 const BASIC_LIMIT = 10;
 
 export async function getUsageForUser(userId: string, plan: Plan) {
@@ -16,11 +17,13 @@ export async function getUsageForUser(userId: string, plan: Plan) {
   });
 
   const used = usage?.emailCount ?? 0;
+  const limit = plan === Plan.PRO ? null : plan === Plan.BASIC ? BASIC_LIMIT : FREE_LIMIT;
+
   return {
     month,
     used,
-    limit: plan === Plan.BASIC ? BASIC_LIMIT : null,
-    canGenerate: plan === Plan.PRO || used < BASIC_LIMIT,
+    limit,
+    canGenerate: limit === null || used < limit,
   };
 }
 

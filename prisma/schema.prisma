@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum Plan {
+  FREE
   BASIC
   PRO
 }
@@ -27,7 +28,7 @@ model User {
   image              String?
   stripeCustomerId   String?              @unique
   subscriptionStatus SubscriptionStatus   @default(FREE)
-  plan               Plan                 @default(BASIC)
+  plan               Plan                 @default(FREE)
   createdAt          DateTime             @default(now())
   emailGenerations   EmailGeneration[]
   usageTracking      UsageTracking[]

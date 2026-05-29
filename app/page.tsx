@@ -27,6 +27,7 @@ export default function HomePage() {
               description="Perfect for occasional reminders and small client books."
               features={["10 AI reminder emails per month", "Email history", "Copy-ready output"]}
               plan="BASIC"
+              buttonLabel="Choose Basic"
             />
             <PricingCard
               title="Pro"
@@ -35,6 +36,7 @@ export default function HomePage() {
               description="Best for active freelancers and small teams with recurring invoices."
               features={["Unlimited AI reminder emails", "Priority generation", "All dashboard features"]}
               plan="PRO"
+              buttonLabel="Choose Pro"
               highlighted
             />
           </div>
