@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { EmailOutput } from "@/components/EmailOutput";
 
 type GeneratorResponse = {
   generatedEmail: string;
   saved: boolean;
+  generationId?: string;
   usage: {
     used: number;
     limit: number | null;
@@ -15,8 +17,11 @@ type GeneratorResponse = {
 
 export function EmailForm() {
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [generatedEmail, setGeneratedEmail] = useState("");
   const [saved, setSaved] = useState(false);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
 
   const [formValues, setFormValues] = useState({
     clientName: "",
@@ -59,6 +64,7 @@ export function EmailForm() {
 
       if (!response.ok) {
         if (data.limitReached) {
+          setLimitReached(true);
           toast.error("Monthly email limit reached. Upgrade to Pro for unlimited usage.");
         } else {
           toast.error(data.error ?? "Failed to generate email.");
@@ -66,13 +72,50 @@ export function EmailForm() {
         return;
       }
 
+      setLimitReached(false);
       setGeneratedEmail(data.generatedEmail);
       setSaved(data.saved);
+      setGenerationId(data.generationId ?? null);
       toast.success("Email generated successfully.");
     } catch {
       toast.error("Unexpected error while generating email.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onSaveToHistory() {
+    if (!generatedEmail) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          generationId,
+          invoiceNumber: formValues.invoiceNumber,
+          clientName: formValues.clientName,
+          amount: formValues.amount,
+          daysOverdue,
+          tone: formValues.tone,
+          generatedEmail,
+        }),
+      });
+
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to save to history.");
+      }
+
+      setSaved(true);
+      toast.success("Saved to history.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Save failed.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -196,9 +239,19 @@ export function EmailForm() {
             "Generate Email"
           )}
         </button>
+
+        {limitReached ? (
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900 dark:border-violet-900/40 dark:bg-violet-950/30 dark:text-violet-200">
+            You have reached your Basic plan limit this month.
+            <Link href="/pricing" className="ml-1 font-semibold underline underline-offset-4">
+              Upgrade to Pro
+            </Link>
+            for unlimited emails.
+          </div>
+        ) : null}
       </form>
 
-      <EmailOutput content={generatedEmail} saved={saved} />
+      <EmailOutput content={generatedEmail} saved={saved} saving={saving} onSave={onSaveToHistory} />
     </div>
   );
 }

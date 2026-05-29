@@ -5,9 +5,11 @@ import { toast } from "sonner";
 type EmailOutputProps = {
   content: string;
   saved: boolean;
+  saving?: boolean;
+  onSave?: () => void;
 };
 
-export function EmailOutput({ content, saved }: EmailOutputProps) {
+export function EmailOutput({ content, saved, saving = false, onSave }: EmailOutputProps) {
   const charCount = content.length;
 
   async function copyToClipboard() {
@@ -35,6 +37,14 @@ export function EmailOutput({ content, saved }: EmailOutputProps) {
           <span>{charCount} characters</span>
           <button
             type="button"
+            disabled={!onSave || saved || saving}
+            onClick={onSave}
+            className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-100"
+          >
+            {saved ? "Saved" : saving ? "Saving..." : "Save to history"}
+          </button>
+          <button
+            type="button"
             onClick={copyToClipboard}
             className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-100"
           >
@@ -47,7 +57,7 @@ export function EmailOutput({ content, saved }: EmailOutputProps) {
         {content}
       </pre>
 
-      <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{saved ? "Saved to history" : "Save to history after generating"}</p>
+      <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{saved ? "Saved to history" : "Click Save to store this email in your history."}</p>
     </section>
   );
 }

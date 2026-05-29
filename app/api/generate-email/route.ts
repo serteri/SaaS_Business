@@ -86,7 +86,7 @@ Write one complete email ready to send.`;
       return NextResponse.json({ error: "No email generated." }, { status: 502 });
     }
 
-    await prisma.emailGeneration.create({
+    const created = await prisma.emailGeneration.create({
       data: {
         userId: user.id,
         invoiceNumber: input.invoiceNumber,
@@ -104,6 +104,7 @@ Write one complete email ready to send.`;
     return NextResponse.json({
       generatedEmail,
       saved: true,
+      generationId: created.id,
       usage: {
         used: freshUsage.used,
         limit: freshUsage.limit,
