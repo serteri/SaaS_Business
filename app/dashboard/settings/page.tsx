@@ -1,10 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const isActivePaidSubscription =
+    session?.user?.subscriptionStatus === "ACTIVE" &&
+    (session?.user?.plan === "BASIC" || session?.user?.plan === "PRO");
+  const isFreePlan = session?.user?.subscriptionStatus === "FREE";
 
   async function openPortal() {
     const response = await fetch("/api/stripe/create-portal", {
@@ -38,20 +43,31 @@ export default function SettingsPage() {
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => void openPortal()}
-            className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-zinc-950"
-          >
-            Manage billing
-          </button>
-          <button
-            type="button"
-            onClick={() => void openPortal()}
-            className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
-          >
-            Cancel subscription
-          </button>
+          {isActivePaidSubscription ? (
+            <>
+              <button
+                type="button"
+                onClick={() => void openPortal()}
+                className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-zinc-950"
+              >
+                Manage billing
+              </button>
+              <button
+                type="button"
+                onClick={() => void openPortal()}
+                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+              >
+                Cancel subscription
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/pricing"
+              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-zinc-950"
+            >
+              {isFreePlan ? "Upgrade Plan" : "View Plans"}
+            </Link>
+          )}
         </div>
       </section>
     </div>
