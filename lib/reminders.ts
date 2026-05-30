@@ -35,6 +35,77 @@ export type InvoiceWithLogs = Invoice & {
 
 export type ReminderTone = "friendly" | "firm" | "formal/legal";
 
+function getSubjectPrefix(reminderNumber: number) {
+  if (reminderNumber <= 1) {
+    return "";
+  }
+
+  if (reminderNumber === 2) {
+    return "Follow-up: ";
+  }
+
+  if (reminderNumber === 3) {
+    return "2nd Follow-up: ";
+  }
+
+  return "Final Notice: ";
+}
+
+function getFirstReminderStatusText(daysOffset: number) {
+  if (daysOffset < 0) {
+    return "Due Soon";
+  }
+
+  if (daysOffset === 0) {
+    return "Due Today";
+  }
+
+  return "Overdue";
+}
+
+function buildFallbackSubject(invoiceNumber: string, amount: number, currency: string, daysOffset: number, reminderNumber: number) {
+  const prefix = getSubjectPrefix(reminderNumber);
+  const amountText = formatCurrency(amount, currency);
+
+  if (reminderNumber <= 1) {
+    return `Invoice #${invoiceNumber} ${getFirstReminderStatusText(daysOffset)} - ${amountText}`;
+  }
+
+  if (reminderNumber === 2) {
+    return `${prefix}Invoice #${invoiceNumber} Overdue - ${amountText}`;
+  }
+
+  return `${prefix}Invoice #${invoiceNumber} - ${amountText}`;
+}
+
+function normalizeSubject(params: {
+  generatedSubject: string;
+  invoiceNumber: string;
+  amount: number;
+  currency: string;
+  daysOffset: number;
+  reminderNumber: number;
+}) {
+  const fallback = buildFallbackSubject(
+    params.invoiceNumber,
+    params.amount,
+    params.currency,
+    params.daysOffset,
+    params.reminderNumber,
+  );
+
+  const subject = params.generatedSubject.trim();
+  if (!subject) {
+    return fallback;
+  }
+
+  if (params.reminderNumber === 1 && /(follow-up|reminder)/i.test(subject)) {
+    return fallback;
+  }
+
+  return subject;
+}
+
 export function getToneForDaysOffset(daysOffset: number): ReminderTone {
   if (daysOffset === -3 || daysOffset === 0) {
     return "friendly";
@@ -171,6 +242,12 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
     },
   });
   const reminderNumber = sentReminderCount + 1;
+  console.log("[reminders] reminderNumber computed", {
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.invoiceNumber,
+    sentReminderCount,
+    reminderNumber,
+  });
   const tone = manualTone ?? getToneForDaysOffset(daysOffset);
   const userName = invoice.user.name?.trim() || "Accounts Team";
   const userCompany = invoice.user.company?.trim() || "";
@@ -190,16 +267,25 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       userCompany,
     });
 
+    const subject = normalizeSubject({
+      generatedSubject: generated.subject,
+      invoiceNumber: invoice.invoiceNumber,
+      amount: invoice.amount,
+      currency: invoice.currency,
+      daysOffset,
+      reminderNumber,
+    });
+
     await sendReminderEmail({
       to: invoice.clientEmail,
-      subject: generated.subject,
+      subject,
       body: generated.body,
     });
 
     await logReminderEvent({
       invoiceId: invoice.id,
       daysOffset,
-      subject: generated.subject,
+      subject,
       status: "sent",
     });
 
@@ -216,7 +302,7 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
 
     return {
       sent: true,
-      subject: generated.subject,
+      subject,
       body: generated.body,
       daysOffset,
       label: getReminderLabel(daysOffset),
