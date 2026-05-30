@@ -23,16 +23,17 @@ const tools = [
     status: "Coming soon",
     description: "More tools launching soon",
   },
-];
+] as const;
 
-export function Features() {
+export default function ToolsPage() {
   return (
-    <section className="px-4 py-20 sm:px-6 lg:px-8" id="tools">
+    <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Our tools</p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Built to remove freelancer busywork</h2>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Choose the tool you need today</h1>
         </div>
+
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {tools.map((tool) => (
             <article
@@ -52,7 +53,7 @@ export function Features() {
               >
                 {tool.status}
               </span>
-              <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h3>
+              <h2 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h2>
               <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tool.description}</p>
 
               {tool.status === "Live" ? (

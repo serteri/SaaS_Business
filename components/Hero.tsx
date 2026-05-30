@@ -11,24 +11,24 @@ export function Hero() {
       <div className="mx-auto max-w-4xl py-12 text-center sm:py-16 lg:py-20 animate-fade-up">
         <p className="mb-5 text-sm font-medium uppercase tracking-[0.25em] text-violet-600">Ongonix</p>
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl lg:text-7xl dark:text-white">
-          Get paid faster. Write better payment reminders.
+          AI tools built for how freelancers work
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg dark:text-zinc-300">
-          AI-crafted payment reminder emails for freelancers and small businesses. Keep your tone professional while staying firm about payment.
+          Stop wasting time on emails, reminders, and admin. Let AI handle the boring parts.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/signin"
+            href="/tools"
             className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-6 text-sm font-medium text-white transition hover:bg-violet-500"
           >
-            Start free trial
+            Browse tools
           </Link>
           <Link
             href="/pricing"
             className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-950 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
           >
-            View pricing
+            See pricing
           </Link>
         </div>
       </div>
