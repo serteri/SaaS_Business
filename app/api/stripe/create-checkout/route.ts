@@ -49,25 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Stripe price IDs are not configured." }, { status: 500 });
     }
 
-    const ensureCustomerId = async () => {
-      const customer = await stripe.customers.create({
-        email: userEmail,
-        name: session.user.name ?? undefined,
-        metadata: { userId: user.id },
-      });
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: customer.id },
-      });
-
-      return customer.id;
-    };
-
     let customerId = user.stripeCustomerId;
-    if (!customerId) {
-      customerId = await ensureCustomerId();
-    }
 
     const baseUrl = process.env.NEXTAUTH_URL ?? request.headers.get("origin") ?? "http://localhost:3000";
     const successUrl = `${baseUrl}/dashboard/settings?checkout=success`;
@@ -82,11 +64,18 @@ export async function POST(request: Request) {
       cancelUrl,
     });
 
-    const createCheckoutSession = async (targetCustomerId: string) => {
-      return stripe.checkout.sessions.create({
+    const createCheckoutSession = async (targetCustomerId: string | null) => {
+      const checkoutParams: {
+        mode: "subscription";
+        line_items: Array<{ price: string; quantity: 1 }>;
+        success_url: string;
+        cancel_url: string;
+        metadata: { userId: string; plan: Plan };
+        allow_promotion_codes: true;
+        customer?: string;
+        customer_email?: string;
+      } = {
         mode: "subscription",
-        customer: targetCustomerId,
-        customer_email: user.email ?? undefined,
         line_items: [{ price: priceId, quantity: 1 }],
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -95,15 +84,23 @@ export async function POST(request: Request) {
           plan,
         },
         allow_promotion_codes: true,
-      });
+      };
+
+      if (targetCustomerId) {
+        checkoutParams.customer = targetCustomerId;
+      } else {
+        checkoutParams.customer_email = userEmail;
+      }
+
+      return stripe.checkout.sessions.create(checkoutParams);
     };
 
     let checkoutSession;
     try {
-      checkoutSession = await createCheckoutSession(customerId);
+      checkoutSession = await createCheckoutSession(customerId ?? null);
     } catch (error: unknown) {
       if (customerId && isNoSuchCustomerError(error)) {
-        console.warn("[checkout] Stored customer does not exist in current Stripe mode. Recreating customer.", {
+        console.warn("[checkout] Stored customer does not exist in current Stripe mode. Clearing customer and retrying with customer_email.", {
           userId: user.id,
           oldCustomerId: customerId,
         });
@@ -113,8 +110,8 @@ export async function POST(request: Request) {
           data: { stripeCustomerId: null },
         });
 
-        customerId = await ensureCustomerId();
-        checkoutSession = await createCheckoutSession(customerId);
+        customerId = null;
+        checkoutSession = await createCheckoutSession(null);
       } else {
         throw error;
       }
