@@ -1,6 +1,6 @@
 import type { Invoice, ReminderLog } from "@prisma/client";
 import { getAnthropicClient } from "@/lib/anthropic";
-import { formatCurrency, getDaysOffset, getReminderLabel, getReminderNumberLabel, getReminderScheduleEntry } from "@/lib/invoices";
+import { formatCurrency, getDaysOffset, getReminderLabel, getReminderScheduleEntry } from "@/lib/invoices";
 import { getResendClient } from "@/lib/resend";
 import { prisma } from "@/lib/prisma";
 
@@ -13,7 +13,8 @@ type ReminderInput = {
   currency: string;
   dueDate: Date;
   daysOffset: number;
-  reminderNumber: string;
+  reminderNumber: number;
+  sentReminderCount: number;
   tone: ReminderTone;
   userName: string;
   userCompany?: string;
@@ -72,6 +73,7 @@ currency: ${input.currency}
 dueDate: ${input.dueDate.toISOString()}
 daysOffset: ${input.daysOffset}
 reminderNumber: ${input.reminderNumber}
+sentReminderCount: ${input.sentReminderCount}
 tone: ${input.tone}
 userName: ${input.userName}
 userCompany: ${input.userCompany || "(none)"}
@@ -79,6 +81,11 @@ userCompany: ${input.userCompany || "(none)"}
 Generate a professional invoice reminder email.
 Tone should match urgency: friendly for early reminders, firm for overdue ones, formal/legal for serious overdue reminders.
 Do not use placeholders like [Your Name] or [Your Company].
+Use reminderNumber to set an accurate subject line:
+- reminderNumber = 1 -> no reminder/follow-up prefix. Example: "Invoice #123 Due Today - $100.00"
+- reminderNumber = 2 -> use "Follow-up:" prefix (first follow-up). Example: "Follow-up: Invoice #123 Overdue - $100.00"
+- reminderNumber = 3 -> use "2nd Follow-up:" prefix. Example: "2nd Follow-up: Invoice #123 - $100.00"
+- reminderNumber >= 4 -> use "Final Notice:" prefix. Example: "Final Notice: Invoice #123 - $100.00"
 The email body must end with this signature exactly:
 Best regards,
 ${input.userName}${signatureCompanyLine}
@@ -95,7 +102,7 @@ export async function generateReminderEmail(input: ReminderInput) {
     model: "claude-sonnet-4-20250514",
     max_tokens: 700,
     system:
-      'Generate a professional invoice reminder email. Tone should match urgency: friendly for early reminders, firm for overdue ones, formal/legal for serious overdue reminders. Do not use placeholders such as [Your Name] or [Your Company]. Always include the sender signature exactly as provided. Return JSON: { subject: string, body: string }',
+      'Generate a professional invoice reminder email. Tone should match urgency: friendly for early reminders, firm for overdue ones, formal/legal for serious overdue reminders. Ensure subject line format matches reminderNumber rules provided by the user prompt. Do not use placeholders such as [Your Name] or [Your Company]. Always include the sender signature exactly as provided. Return JSON: { subject: string, body: string }',
     messages: [{ role: "user", content: getReminderPrompt(input) }],
   });
 
@@ -157,7 +164,13 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
     }
   }
 
-  const reminderNumber = scheduleEntry?.reminderNumber ?? getReminderNumberLabel(Math.max(0, invoice.remindersSent));
+  const sentReminderCount = await prisma.reminderLog.count({
+    where: {
+      invoiceId: invoice.id,
+      status: "sent",
+    },
+  });
+  const reminderNumber = sentReminderCount + 1;
   const tone = manualTone ?? getToneForDaysOffset(daysOffset);
   const userName = invoice.user.name?.trim() || "Accounts Team";
   const userCompany = invoice.user.company?.trim() || "";
@@ -171,6 +184,7 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       dueDate: invoice.dueDate,
       daysOffset,
       reminderNumber,
+      sentReminderCount,
       tone,
       userName,
       userCompany,
