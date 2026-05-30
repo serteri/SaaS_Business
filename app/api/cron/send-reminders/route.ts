@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { Plan } from "@prisma/client";
 import { getDaysOffset, getReminderScheduleEntry } from "@/lib/invoices";
 import { prisma } from "@/lib/prisma";
 import { markPastDueInvoices, sendInvoiceReminder } from "@/lib/reminders";
+import { getReminderUsageForUser, incrementReminderUsage } from "@/lib/usage";
 
 export const runtime = "nodejs";
 
@@ -33,6 +35,9 @@ export async function GET(request: Request) {
           select: {
             name: true,
             company: true,
+            plan: true,
+            subscriptionStatus: true,
+            id: true,
           },
         },
         reminderLogs: {
@@ -55,8 +60,16 @@ export async function GET(request: Request) {
       }
 
       try {
+        const effectivePlan = invoice.user.subscriptionStatus === "ACTIVE" ? (invoice.user.plan as Plan) : Plan.FREE;
+        const reminderUsage = await getReminderUsageForUser(invoice.user.id, effectivePlan);
+        if (!reminderUsage.canSend) {
+          skippedCount += 1;
+          continue;
+        }
+
         const result = await sendInvoiceReminder({ invoice });
         if (result.sent) {
+          await incrementReminderUsage(invoice.user.id, reminderUsage.month);
           sentCount += 1;
         } else {
           skippedCount += 1;

@@ -31,7 +31,7 @@ export default function PricingPage() {
             price="$0"
             period="/month"
             description="Great for getting started with occasional reminders."
-            features={["3 AI emails per month", "Basic email history", "Copy to clipboard"]}
+            features={["3 AI emails per month", "3 active invoices", "10 automated reminders/month", "Basic email history", "Copy to clipboard"]}
             buttonLabel={freeButtonLabel}
             buttonDisabled={isLoggedIn && effectivePlan === "FREE"}
             buttonHref={!isLoggedIn ? "/signin" : undefined}
@@ -41,7 +41,7 @@ export default function PricingPage() {
             price="$9"
             period="/month"
             description="For freelancers with a handful of monthly invoices."
-            features={["10 AI emails per month", "Full email history", "Filters and search", "Copy and export"]}
+            features={["10 AI emails per month", "10 active invoices", "50 automated reminders/month", "Full email history", "Filters and search", "Copy and export"]}
             plan="BASIC"
             buttonLabel={effectivePlan === "BASIC" ? "Current Plan" : "Choose Basic"}
             buttonDisabled={effectivePlan === "BASIC"}
@@ -51,7 +51,7 @@ export default function PricingPage() {
             price="$19"
             period="/month"
             description="For consultants and small businesses that need unlimited reminders."
-            features={["Unlimited AI emails", "Priority generation", "Everything in Basic"]}
+            features={["Unlimited AI emails", "Unlimited active invoices", "Unlimited automated reminders", "Priority generation", "Everything in Basic"]}
             plan="PRO"
             buttonLabel={effectivePlan === "PRO" ? "Current Plan" : "Choose Pro"}
             buttonDisabled={effectivePlan === "PRO"}

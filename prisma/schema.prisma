@@ -56,6 +56,7 @@ model UsageTracking {
   userId     String
   month      String
   emailCount Int      @default(0)
+  reminderCount Int   @default(0)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, month])

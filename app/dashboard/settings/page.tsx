@@ -13,9 +13,9 @@ type UsagePayload = {
 };
 
 const planFeatures: Record<"FREE" | "BASIC" | "PRO", string[]> = {
-  FREE: ["3 AI emails per month", "Basic email history", "Copy to clipboard"],
-  BASIC: ["10 AI emails per month", "Full email history", "Filters and search", "Copy and export"],
-  PRO: ["Unlimited AI emails", "Priority generation", "Everything in Basic"],
+  FREE: ["3 AI emails per month", "3 active invoices", "10 automated reminders/month", "Basic email history", "Copy to clipboard"],
+  BASIC: ["10 AI emails per month", "10 active invoices", "50 automated reminders/month", "Full email history", "Filters and search", "Copy and export"],
+  PRO: ["Unlimited AI emails", "Unlimited active invoices", "Unlimited automated reminders", "Priority generation", "Everything in Basic"],
 };
 
 export default function SettingsPage() {

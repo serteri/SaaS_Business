@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Plan } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendInvoiceReminder } from "@/lib/reminders";
+import { getReminderUsageForUser, incrementReminderUsage } from "@/lib/usage";
 
 const manualToneSchema = z.object({
   tone: z.enum(["friendly", "firm", "formal"]).optional(),
@@ -34,6 +36,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           select: {
             name: true,
             company: true,
+            plan: true,
+            subscriptionStatus: true,
           },
         },
         reminderLogs: {
@@ -46,7 +50,26 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return NextResponse.json({ error: "Invoice not found." }, { status: 404 });
     }
 
+    const effectivePlan = invoice.user.subscriptionStatus === "ACTIVE" ? (invoice.user.plan as Plan) : Plan.FREE;
+    const reminderUsage = await getReminderUsageForUser(session.user.id, effectivePlan);
+    if (!reminderUsage.canSend) {
+      return NextResponse.json(
+        {
+          error: "Monthly reminder limit reached",
+          limitReached: true,
+          reminderUsage: {
+            used: reminderUsage.used,
+            limit: reminderUsage.limit,
+          },
+        },
+        { status: 403 },
+      );
+    }
+
     const result = await sendInvoiceReminder({ invoice, force: true, manualTone });
+    if (result.sent) {
+      await incrementReminderUsage(session.user.id, reminderUsage.month);
+    }
     return NextResponse.json({ ok: true, result });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to send reminder." }, { status: 500 });
