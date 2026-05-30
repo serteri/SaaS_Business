@@ -90,6 +90,7 @@ model ReminderLog {
   sentAt       DateTime @default(now())
   daysOffset   Int
   emailSubject String
+  emailBody    String?
   status       String
   invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 

@@ -25,25 +25,60 @@ export async function GET(request: Request) {
     const tone = searchParams.get("tone") ?? "";
     const dateFrom = searchParams.get("dateFrom") ?? "";
     const dateTo = searchParams.get("dateTo") ?? "";
+    const tab = searchParams.get("tab") ?? "generated";
+
+    const dateFilter = dateFrom || dateTo
+      ? {
+          ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+          ...(dateTo ? { lte: new Date(`${dateTo}T23:59:59.999Z`) } : {}),
+        }
+      : undefined;
+
+    if (tab === "reminders") {
+      const items = await prisma.reminderLog.findMany({
+        where: {
+          invoice: {
+            userId: session.user.id,
+            ...(clientName ? { clientName: { contains: clientName, mode: "insensitive" } } : {}),
+          },
+          ...(dateFilter ? { sentAt: dateFilter } : {}),
+        },
+        include: {
+          invoice: {
+            select: {
+              clientName: true,
+              invoiceNumber: true,
+            },
+          },
+        },
+        orderBy: { sentAt: "desc" },
+      });
+
+      return NextResponse.json({
+        tab,
+        items: items.map((item) => ({
+          id: item.id,
+          clientName: item.invoice.clientName,
+          invoiceNumber: item.invoice.invoiceNumber,
+          subject: item.emailSubject,
+          emailBody: item.emailBody,
+          status: item.status,
+          sentAt: item.sentAt,
+        })),
+      });
+    }
 
     const items = await prisma.emailGeneration.findMany({
       where: {
         userId: session.user.id,
         ...(clientName ? { clientName: { contains: clientName, mode: "insensitive" } } : {}),
         ...(tone ? { tone } : {}),
-        ...(dateFrom || dateTo
-          ? {
-              createdAt: {
-                ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-                ...(dateTo ? { lte: new Date(`${dateTo}T23:59:59.999Z`) } : {}),
-              },
-            }
-          : {}),
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ tab, items });
   } catch {
     return NextResponse.json({ error: "Unable to load history." }, { status: 500 });
   }

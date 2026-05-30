@@ -191,12 +191,13 @@ export async function sendReminderEmail(params: { to: string; subject: string; b
   });
 }
 
-export async function logReminderEvent(params: { invoiceId: string; daysOffset: number; subject: string; status: string }) {
+export async function logReminderEvent(params: { invoiceId: string; daysOffset: number; subject: string; body?: string; status: string }) {
   return prisma.reminderLog.create({
     data: {
       invoiceId: params.invoiceId,
       daysOffset: params.daysOffset,
       emailSubject: params.subject,
+      emailBody: params.body,
       status: params.status,
     },
   });
@@ -279,6 +280,7 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       invoiceId: invoice.id,
       daysOffset,
       subject,
+      body: generated.body,
       status: "sent",
     });
 
@@ -305,6 +307,7 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       invoiceId: invoice.id,
       daysOffset,
       subject: invoice.invoiceNumber,
+      body: undefined,
       status: "failed",
     });
 
