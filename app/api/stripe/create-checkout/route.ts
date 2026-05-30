@@ -4,10 +4,17 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient } from "@/lib/stripe";
 
+function isNoSuchCustomerError(error: unknown) {
+  const stripeErr = error as { message?: string; code?: string; param?: string };
+  const message = (stripeErr.message ?? "").toLowerCase();
+  return message.includes("no such customer") || (stripeErr.code === "resource_missing" && stripeErr.param === "customer");
+}
+
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.id || !session.user.email) {
+    const userEmail = session?.user?.email;
+    if (!session?.user?.id || !userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -42,19 +49,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Stripe price IDs are not configured." }, { status: 500 });
     }
 
-    let customerId = user.stripeCustomerId;
-    if (!customerId) {
+    const ensureCustomerId = async () => {
       const customer = await stripe.customers.create({
-        email: session.user.email,
+        email: userEmail,
         name: session.user.name ?? undefined,
         metadata: { userId: user.id },
       });
-      customerId = customer.id;
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { stripeCustomerId: customerId },
+        data: { stripeCustomerId: customer.id },
       });
+
+      return customer.id;
+    };
+
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      customerId = await ensureCustomerId();
     }
 
     const baseUrl = process.env.NEXTAUTH_URL ?? request.headers.get("origin") ?? "http://localhost:3000";
@@ -70,19 +82,43 @@ export async function POST(request: Request) {
       cancelUrl,
     });
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email ?? undefined,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        userId: user.id,
-        plan,
-      },
-      allow_promotion_codes: true,
-    });
+    const createCheckoutSession = async (targetCustomerId: string) => {
+      return stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer: targetCustomerId,
+        customer_email: user.email ?? undefined,
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          userId: user.id,
+          plan,
+        },
+        allow_promotion_codes: true,
+      });
+    };
+
+    let checkoutSession;
+    try {
+      checkoutSession = await createCheckoutSession(customerId);
+    } catch (error: unknown) {
+      if (customerId && isNoSuchCustomerError(error)) {
+        console.warn("[checkout] Stored customer does not exist in current Stripe mode. Recreating customer.", {
+          userId: user.id,
+          oldCustomerId: customerId,
+        });
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { stripeCustomerId: null },
+        });
+
+        customerId = await ensureCustomerId();
+        checkoutSession = await createCheckoutSession(customerId);
+      } else {
+        throw error;
+      }
+    }
 
     console.log("[checkout] Session created:", checkoutSession.id, "url:", checkoutSession.url?.slice(0, 50));
     return NextResponse.json({ url: checkoutSession.url });
