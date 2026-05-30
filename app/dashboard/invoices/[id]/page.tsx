@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { formatCurrency, getDaysOffset, getNextScheduledReminder, getReminderLabel } from "@/lib/invoices";
 import { prisma } from "@/lib/prisma";
 import { InvoiceActions } from "@/components/InvoiceActions";
+import { ReminderHistory } from "@/components/ReminderHistory";
 
 type InvoiceDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -119,20 +120,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
           )}
 
           <h3 className="mt-6 text-base font-semibold">Reminder history</h3>
-          {invoice.reminderLogs.length === 0 ? (
-            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">No reminders sent yet.</p>
-          ) : (
-            <ol className="mt-4 space-y-4 border-l border-zinc-200 pl-4 dark:border-zinc-800">
-              {invoice.reminderLogs.map((log) => (
-                <li key={log.id} className="space-y-1">
-                  <p className="text-sm font-medium">{getReminderLabel(log.daysOffset)}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{new Date(log.sentAt).toLocaleString()}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{log.emailSubject}</p>
-                  <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{log.status}</p>
-                </li>
-              ))}
-            </ol>
-          )}
+          <ReminderHistory logs={invoice.reminderLogs} />
         </div>
       </section>
     </div>
