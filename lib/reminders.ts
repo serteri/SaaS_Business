@@ -44,10 +44,6 @@ function getSubjectPrefix(reminderNumber: number) {
     return "Follow-up: ";
   }
 
-  if (reminderNumber === 3) {
-    return "2nd Follow-up: ";
-  }
-
   return "Final Notice: ";
 }
 
@@ -86,7 +82,7 @@ function normalizeSubject(params: {
   daysOffset: number;
   reminderNumber: number;
 }) {
-  const fallback = buildFallbackSubject(
+  const enforced = buildFallbackSubject(
     params.invoiceNumber,
     params.amount,
     params.currency,
@@ -94,16 +90,8 @@ function normalizeSubject(params: {
     params.reminderNumber,
   );
 
-  const subject = params.generatedSubject.trim();
-  if (!subject) {
-    return fallback;
-  }
-
-  if (params.reminderNumber === 1 && /(follow-up|reminder)/i.test(subject)) {
-    return fallback;
-  }
-
-  return subject;
+  // Subject prefixes are enforced from reminderNumber to avoid off-by-one AI phrasing.
+  return enforced;
 }
 
 export function getToneForDaysOffset(daysOffset: number): ReminderTone {
@@ -274,6 +262,11 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       currency: invoice.currency,
       daysOffset,
       reminderNumber,
+    });
+    console.log("[reminders] subject generated", {
+      invoiceId: invoice.id,
+      reminderNumber,
+      subject,
     });
 
     await sendReminderEmail({
