@@ -66,7 +66,7 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const response = await fetch("/api/profile");
+        const response = await fetch("/api/user/profile");
         const data = (await response.json()) as { error?: string; user?: { name: string | null; email: string | null; company: string | null } };
         if (!response.ok) {
           throw new Error(data.error ?? "Unable to load profile.");
@@ -90,7 +90,7 @@ export default function SettingsPage() {
     setSavingProfile(true);
 
     try {
-      const response = await fetch("/api/profile", {
+      const response = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,20 +148,20 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Company</label>
-            <input
-              value={profile.company}
-              onChange={(event) => setProfile((prev) => ({ ...prev, company: event.target.value }))}
-              placeholder="Optional"
-              className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
-            />
-          </div>
-          <div>
             <label className="mb-1 block text-sm font-medium">Email</label>
             <input
               value={profile.email}
               disabled
               className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Company Name</label>
+            <input
+              value={profile.company}
+              onChange={(event) => setProfile((prev) => ({ ...prev, company: event.target.value }))}
+              placeholder="Your company or business name"
+              className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
             />
           </div>
           <button

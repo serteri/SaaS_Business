@@ -16,7 +16,7 @@ type ReminderInput = {
   reminderNumber: string;
   tone: ReminderTone;
   userName: string;
-  userCompany: string;
+  userCompany?: string;
 };
 
 type GeneratedReminderEmail = {
@@ -160,7 +160,7 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
   const reminderNumber = scheduleEntry?.reminderNumber ?? getReminderNumberLabel(Math.max(0, invoice.remindersSent));
   const tone = manualTone ?? getToneForDaysOffset(daysOffset);
   const userName = invoice.user.name?.trim() || "Accounts Team";
-  const userCompany = invoice.user.company?.trim() || userName;
+  const userCompany = invoice.user.company?.trim() || "";
 
   try {
     const generated = await generateReminderEmail({

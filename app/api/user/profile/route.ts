@@ -49,7 +49,7 @@ export async function PATCH(request: Request) {
         name: parsed.data.name,
         company: parsed.data.company || null,
       },
-      select: { name: true, email: true, company: true },
+      select: { id: true, name: true, email: true, company: true },
     });
 
     return NextResponse.json({ user: updated });
