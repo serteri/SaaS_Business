@@ -57,14 +57,26 @@ export async function POST(request: Request) {
       });
     }
 
-    const origin = request.headers.get("origin") ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const baseUrl = process.env.NEXTAUTH_URL ?? request.headers.get("origin") ?? "http://localhost:3000";
+    const successUrl = `${baseUrl}/dashboard/settings?checkout=success`;
+    const cancelUrl = `${baseUrl}/pricing?checkout=cancelled`;
+
+    console.log("[checkout] Creating checkout with:", {
+      priceId,
+      customerId,
+      userEmail: user.email,
+      userId: user.id,
+      successUrl,
+      cancelUrl,
+    });
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
+      customer_email: customerId ? undefined : user.email ?? undefined,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/dashboard/settings?checkout=success`,
-      cancel_url: `${origin}/pricing?checkout=cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         userId: user.id,
         plan,
@@ -72,10 +84,16 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
     });
 
+    console.log("[checkout] Session created:", checkoutSession.id, "url:", checkoutSession.url?.slice(0, 50));
     return NextResponse.json({ url: checkoutSession.url });
-  } catch (error) {
-    console.error("[checkout] Stripe checkout error:", error);
-    const message = error instanceof Error ? error.message : "Unable to create Stripe checkout session.";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: unknown) {
+    const stripeErr = error as { message?: string; type?: string; code?: string; param?: string };
+    console.error("[checkout] Stripe error details:", {
+      message: stripeErr.message,
+      type: stripeErr.type,
+      code: stripeErr.code,
+      param: stripeErr.param,
+    });
+    return NextResponse.json({ error: stripeErr.message ?? "Unable to create Stripe checkout session." }, { status: 500 });
   }
 }
