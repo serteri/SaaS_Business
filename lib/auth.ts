@@ -56,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          company: user.company,
           image: user.image,
         };
       },
@@ -91,6 +92,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.sub = dbUser.id;
           token.plan = dbUser.plan;
           token.subscriptionStatus = dbUser.subscriptionStatus;
+          token.company = dbUser.company;
         }
       }
 
@@ -102,6 +104,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.name = dbUser.name;
           token.email = dbUser.email;
           token.picture = dbUser.image;
+          token.company = dbUser.company;
         }
       }
 
@@ -110,6 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
+        session.user.company = (token.company as string | null | undefined) ?? null;
         session.user.plan = (token.plan as "FREE" | "BASIC" | "PRO") ?? "FREE";
         session.user.subscriptionStatus =
           (token.subscriptionStatus as "FREE" | "ACTIVE" | "CANCELED" | "PAST_DUE") ?? "FREE";

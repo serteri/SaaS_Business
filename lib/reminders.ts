@@ -14,6 +14,9 @@ type ReminderInput = {
   dueDate: Date;
   daysOffset: number;
   reminderNumber: string;
+  tone: ReminderTone;
+  userName: string;
+  userCompany: string;
 };
 
 type GeneratedReminderEmail = {
@@ -22,8 +25,30 @@ type GeneratedReminderEmail = {
 };
 
 export type InvoiceWithLogs = Invoice & {
+  user: {
+    name: string | null;
+    company: string | null;
+  };
   reminderLogs: ReminderLog[];
 };
+
+export type ReminderTone = "friendly" | "firm" | "formal/legal";
+
+export function getToneForDaysOffset(daysOffset: number): ReminderTone {
+  if (daysOffset === -3 || daysOffset === 0) {
+    return "friendly";
+  }
+
+  if (daysOffset === 3 || daysOffset === 7) {
+    return "firm";
+  }
+
+  if (daysOffset === 14) {
+    return "formal/legal";
+  }
+
+  return daysOffset > 7 ? "formal/legal" : "firm";
+}
 
 function extractJsonObject(rawText: string) {
   const cleaned = rawText.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
@@ -38,6 +63,8 @@ function extractJsonObject(rawText: string) {
 }
 
 function getReminderPrompt(input: ReminderInput) {
+  const signatureCompanyLine = input.userCompany ? `\n${input.userCompany}` : "";
+
   return `clientName: ${input.clientName}
 invoiceNumber: ${input.invoiceNumber}
 amount: ${formatCurrency(input.amount, input.currency)}
@@ -45,9 +72,16 @@ currency: ${input.currency}
 dueDate: ${input.dueDate.toISOString()}
 daysOffset: ${input.daysOffset}
 reminderNumber: ${input.reminderNumber}
+tone: ${input.tone}
+userName: ${input.userName}
+userCompany: ${input.userCompany || "(none)"}
 
 Generate a professional invoice reminder email.
-Tone should match urgency: friendly for early reminders, firm for overdue ones.
+Tone should match urgency: friendly for early reminders, firm for overdue ones, formal/legal for serious overdue reminders.
+Do not use placeholders like [Your Name] or [Your Company].
+The email body must end with this signature exactly:
+Best regards,
+${input.userName}${signatureCompanyLine}
 Return JSON: { subject: string, body: string }`;
 }
 
@@ -61,7 +95,7 @@ export async function generateReminderEmail(input: ReminderInput) {
     model: "claude-sonnet-4-20250514",
     max_tokens: 700,
     system:
-      'Generate a professional invoice reminder email. Tone should match urgency: friendly for early reminders, firm for overdue ones. Return JSON: { subject: string, body: string }',
+      'Generate a professional invoice reminder email. Tone should match urgency: friendly for early reminders, firm for overdue ones, formal/legal for serious overdue reminders. Do not use placeholders such as [Your Name] or [Your Company]. Always include the sender signature exactly as provided. Return JSON: { subject: string, body: string }',
     messages: [{ role: "user", content: getReminderPrompt(input) }],
   });
 
@@ -102,8 +136,8 @@ export async function logReminderEvent(params: { invoiceId: string; daysOffset: 
   });
 }
 
-export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; force?: boolean }) {
-  const { invoice, force = false } = params;
+export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; force?: boolean; manualTone?: ReminderTone }) {
+  const { invoice, force = false, manualTone } = params;
 
   if (invoice.status === "paid" || invoice.status === "cancelled") {
     return { sent: false, reason: "inactive" as const };
@@ -124,6 +158,10 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
   }
 
   const reminderNumber = scheduleEntry?.reminderNumber ?? getReminderNumberLabel(Math.max(0, invoice.remindersSent));
+  const tone = manualTone ?? getToneForDaysOffset(daysOffset);
+  const userName = invoice.user.name?.trim() || "Accounts Team";
+  const userCompany = invoice.user.company?.trim() || userName;
+
   try {
     const generated = await generateReminderEmail({
       clientName: invoice.clientName,
@@ -133,6 +171,9 @@ export async function sendInvoiceReminder(params: { invoice: InvoiceWithLogs; fo
       dueDate: invoice.dueDate,
       daysOffset,
       reminderNumber,
+      tone,
+      userName,
+      userCompany,
     });
 
     await sendReminderEmail({

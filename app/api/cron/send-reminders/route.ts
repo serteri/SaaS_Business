@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getDaysOffset, getReminderScheduleEntry } from "@/lib/invoices";
 import { prisma } from "@/lib/prisma";
 import { markPastDueInvoices, sendInvoiceReminder } from "@/lib/reminders";
@@ -30,6 +29,12 @@ export async function GET(request: Request) {
         },
       },
       include: {
+        user: {
+          select: {
+            name: true,
+            company: true,
+          },
+        },
         reminderLogs: {
           orderBy: { sentAt: "asc" },
         },

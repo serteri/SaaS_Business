@@ -22,6 +22,12 @@ export default function SettingsPage() {
   const { data: session } = useSession();
   const [usage, setUsage] = useState<UsagePayload | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "",
+    company: "",
+    email: "",
+  });
 
   const effectivePlan = useMemo<"FREE" | "BASIC" | "PRO">(() => {
     if (usage?.plan) {
@@ -57,6 +63,60 @@ export default function SettingsPage() {
     void fetchUsage();
   }, []);
 
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const response = await fetch("/api/profile");
+        const data = (await response.json()) as { error?: string; user?: { name: string | null; email: string | null; company: string | null } };
+        if (!response.ok) {
+          throw new Error(data.error ?? "Unable to load profile.");
+        }
+
+        setProfile({
+          name: data.user?.name ?? session?.user?.name ?? "",
+          company: data.user?.company ?? session?.user?.company ?? "",
+          email: data.user?.email ?? session?.user?.email ?? "",
+        });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unable to load profile.");
+      }
+    }
+
+    void fetchProfile();
+  }, [session?.user?.company, session?.user?.email, session?.user?.name]);
+
+  async function saveProfile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingProfile(true);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: profile.name,
+          company: profile.company,
+        }),
+      });
+
+      const data = (await response.json()) as { error?: string; user?: { name: string; company: string | null } };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to save profile.");
+      }
+
+      setProfile((prev) => ({
+        ...prev,
+        name: data.user?.name ?? prev.name,
+        company: data.user?.company ?? "",
+      }));
+      toast.success("Profile updated.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save profile.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   async function openPortal() {
     const response = await fetch("/api/stripe/create-portal", {
       method: "POST",
@@ -77,8 +137,41 @@ export default function SettingsPage() {
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="text-lg font-semibold">Profile</h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{session?.user?.name ?? "No name set"}</p>
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">{session?.user?.email}</p>
+        <form onSubmit={saveProfile} className="mt-4 space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Name</label>
+            <input
+              required
+              value={profile.name}
+              onChange={(event) => setProfile((prev) => ({ ...prev, name: event.target.value }))}
+              className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Company</label>
+            <input
+              value={profile.company}
+              onChange={(event) => setProfile((prev) => ({ ...prev, company: event.target.value }))}
+              placeholder="Optional"
+              className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Email</label>
+            <input
+              value={profile.email}
+              disabled
+              className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={savingProfile}
+            className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-zinc-950"
+          >
+            {savingProfile ? "Saving..." : "Save profile"}
+          </button>
+        </form>
       </section>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
