@@ -22,13 +22,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const basicPriceId = process.env.STRIPE_BASIC_PRICE_ID;
+    const proPriceId = process.env.STRIPE_PRO_PRICE_ID;
+
+    console.log("[checkout] STRIPE_SECRET_KEY prefix:", stripeKey ? stripeKey.slice(0, 10) : "MISSING");
+    console.log("[checkout] STRIPE_BASIC_PRICE_ID:", basicPriceId ? basicPriceId.slice(0, 10) : "MISSING");
+    console.log("[checkout] STRIPE_PRO_PRICE_ID:", proPriceId ? proPriceId.slice(0, 10) : "MISSING");
+    console.log("[checkout] selected plan:", plan);
+
     const stripe = getStripeClient();
     if (!stripe) {
       return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY." }, { status: 500 });
     }
 
-    const basicPriceId = process.env.STRIPE_BASIC_PRICE_ID;
-    const proPriceId = process.env.STRIPE_PRO_PRICE_ID;
     const priceId = plan === "BASIC" ? basicPriceId : proPriceId;
 
     if (!priceId) {
@@ -66,7 +73,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ url: checkoutSession.url });
-  } catch {
-    return NextResponse.json({ error: "Unable to create Stripe checkout session." }, { status: 500 });
+  } catch (error) {
+    console.error("[checkout] Stripe checkout error:", error);
+    const message = error instanceof Error ? error.message : "Unable to create Stripe checkout session.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
