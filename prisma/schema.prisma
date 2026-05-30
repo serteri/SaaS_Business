@@ -31,6 +31,7 @@ model User {
   plan               Plan                 @default(FREE)
   createdAt          DateTime             @default(now())
   emailGenerations   EmailGeneration[]
+  invoices           Invoice[]
   usageTracking      UsageTracking[]
 }
 
@@ -57,4 +58,40 @@ model UsageTracking {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, month])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  userId         String
+  clientName     String
+  clientEmail    String
+  invoiceNumber   String
+  amount         Float
+  currency       String        @default("USD")
+  dueDate        DateTime
+  status         String        @default("pending")
+  remindersSent  Int           @default(0)
+  lastReminderAt DateTime?
+  paidAt         DateTime?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminderLogs   ReminderLog[]
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+}
+
+model ReminderLog {
+  id           String   @id @default(cuid())
+  invoiceId    String
+  sentAt       DateTime @default(now())
+  daysOffset   Int
+  emailSubject String
+  status       String
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, daysOffset])
+  @@index([invoiceId, sentAt])
 }
