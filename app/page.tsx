@@ -19,13 +19,33 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <PricingCard
+                title="Free"
+                price="$0"
+                period="/month"
+                description="Great for getting started with occasional reminders."
+                features={[
+                  "3 AI emails per month",
+                  "3 active invoices",
+                  "10 automated reminders/month",
+                  "Basic history",
+                ]}
+                buttonLabel="Get started free"
+                buttonHref="/signin"
+              />
             <PricingCard
               title="Basic"
               price="$9"
               period="/month"
-              description="Perfect for occasional reminders and small client books."
-              features={["10 AI reminder emails per month", "Email history", "Copy-ready output"]}
+                description="Perfect for occasional reminders and small client books."
+                features={[
+                  "10 AI reminder emails per month",
+                  "10 active invoices",
+                  "50 automated reminders/month",
+                  "Email history",
+                  "Copy-ready output",
+                ]}
               plan="BASIC"
               buttonLabel="Choose Basic"
             />
@@ -34,7 +54,13 @@ export default function HomePage() {
               price="$19"
               period="/month"
               description="Best for active freelancers and small teams with recurring invoices."
-              features={["Unlimited AI reminder emails", "Priority generation", "All dashboard features"]}
+                features={[
+                  "Unlimited AI reminder emails",
+                  "Unlimited active invoices",
+                  "Unlimited automated reminders",
+                  "Priority generation",
+                  "All dashboard features",
+                ]}
               plan="PRO"
               buttonLabel="Choose Pro"
               highlighted

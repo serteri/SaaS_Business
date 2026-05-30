@@ -31,10 +31,6 @@ export function Hero() {
             View pricing
           </Link>
         </div>
-
-        <p className="mt-8 text-sm text-zinc-500 dark:text-zinc-400">
-          Trusted by freelancers, agencies, and small businesses worldwide
-        </p>
       </div>
     </section>
   );

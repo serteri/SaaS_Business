@@ -71,6 +71,12 @@ export function Navbar() {
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-sm font-semibold text-white">
                 {avatarLetter}
               </span>
+              <Link
+                href="/dashboard"
+                className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                Dashboard
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/" })}
@@ -121,16 +127,25 @@ export function Navbar() {
           <div className="flex items-center gap-3 pt-2">
             <ThemeToggle />
             {isLoggedIn ? (
-              <button
-                type="button"
-                className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                onClick={() => {
-                  setIsOpen(false);
-                  void signOut({ callbackUrl: "/" });
-                }}
-              >
-                Sign out
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-100"
+                  onClick={() => {
+                    setIsOpen(false);
+                    void signOut({ callbackUrl: "/" });
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
             ) : (
               <Link
                 href="/signin"
