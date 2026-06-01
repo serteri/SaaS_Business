@@ -130,3 +130,10 @@ model DocumentEmbedding {
 
   @@index([documentId, chunkIndex])
 }
+
+model Waitlist {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  productName String   @default("Claude RAG Kit")
+  createdAt   DateTime @default(now())
+}
