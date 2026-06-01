@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 enum Plan {
@@ -34,6 +36,7 @@ model User {
   emailGenerations   EmailGeneration[]
   invoices           Invoice[]
   usageTracking      UsageTracking[]
+  documents          Document[]
 }
 
 model EmailGeneration {
@@ -97,4 +100,33 @@ model ReminderLog {
 
   @@index([invoiceId, daysOffset])
   @@index([invoiceId, sentAt])
+}
+
+model Document {
+  id          String              @id @default(cuid())
+  userId      String
+  title       String
+  sourceType  String              @default("upload")
+  status      String              @default("processing")
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  embeddings  DocumentEmbedding[]
+
+  @@index([userId, createdAt])
+}
+
+model DocumentEmbedding {
+  id          String                @id @default(cuid())
+  documentId  String
+  chunkIndex  Int
+  chunkText   String
+  metadata    Json?
+  // pgvector column to store embedding arrays (e.g. 1536/3072 dimensions)
+  embedding   Unsupported("vector")
+  createdAt   DateTime              @default(now())
+  document    Document              @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, chunkIndex])
 }
