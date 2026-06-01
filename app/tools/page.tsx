@@ -3,19 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 
-type Category = "All" | "Business & Productivity" | "Developer Kits" | "Travel & Discovery";
+type Filter = "All" | "Business & Productivity" | "Developer Boilerplates";
 
 type Tool = {
   title: string;
   status: "Live" | "Coming soon";
   description: string;
-  category: Category;
+  category: Exclude<Filter, "All">;
   price?: string;
   cardHref?: string;
 };
 
 const allTools: Tool[] = [
-  // ── Business & Productivity ──────────────────────────────────────────
   {
     title: "Invoice Reminder Writer",
     status: "Live",
@@ -51,13 +50,12 @@ const allTools: Tool[] = [
     description: "More tools launching soon",
     category: "Business & Productivity",
   },
-  // ── Developer Kits ──────────────────────────────────────────────────
   {
     title: "Claude RAG SaaS Starter Kit",
     status: "Live",
     description:
       "Production-ready Next.js + Anthropic scaffold with RAG pipelines, auth, and Stripe billing baked in. Ship your AI SaaS in days, not months.",
-    category: "Developer Kits",
+    category: "Developer Boilerplates",
     price: "Try it free",
     cardHref: "/tools/claude-rag-starter",
   },
@@ -65,24 +63,14 @@ const allTools: Tool[] = [
     title: "AI API Boilerplate",
     status: "Coming soon",
     description: "More developer kits launching soon",
-    category: "Developer Kits",
-  },
-  // ── Travel & Discovery ───────────────────────────────────────────────
-  {
-    title: "FlightAgent",
-    status: "Live",
-    description: "AI-powered travel assistant. Find and book the best flight routes in seconds.",
-    category: "Travel & Discovery",
-    price: "Try it free",
-    cardHref: "https://flightagent.io",
+    category: "Developer Boilerplates",
   },
 ];
 
-const CATEGORIES: Category[] = [
+const FILTERS: Filter[] = [
   "All",
   "Business & Productivity",
-  "Developer Kits",
-  "Travel & Discovery",
+  "Developer Boilerplates",
 ];
 
 function ToolCard({ tool }: { tool: Tool }) {
@@ -126,10 +114,10 @@ function ToolCard({ tool }: { tool: Tool }) {
 }
 
 export default function ToolsPage() {
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [activeFilter, setActiveFilter] = useState<Filter>("All");
 
   const visibleTools =
-    activeCategory === "All" ? allTools : allTools.filter((t) => t.category === activeCategory);
+    activeFilter === "All" ? allTools : allTools.filter((t) => t.category === activeFilter);
 
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -147,15 +135,15 @@ export default function ToolsPage() {
 
         {/* Filter pills */}
         <div className="mb-10 flex flex-wrap justify-center gap-2">
-          {CATEGORIES.map((cat) => (
+          {FILTERS.map((cat) => (
             <button
               key={cat}
               type="button"
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => setActiveFilter(cat)}
               className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-                activeCategory === cat
+                activeFilter === cat
                   ? "bg-violet-600 text-white shadow-sm"
-                  : "border border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-white"
+                  : "bg-transparent text-gray-400 border border-gray-800 hover:border-gray-600 hover:text-white transition-all dark:border-gray-800 dark:hover:border-gray-600"
               }`}
             >
               {cat}
@@ -164,7 +152,7 @@ export default function ToolsPage() {
         </div>
 
         {/* Grid */}
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {visibleTools.map((tool) => (
             <ToolCard key={tool.title} tool={tool} />
           ))}
