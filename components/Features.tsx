@@ -9,6 +9,14 @@ const businessTools = [
     href: "/signin",
   },
   {
+    title: "AI Cold Email Personalizer",
+    status: "Live",
+    description:
+      "Transform cold outreach into warm conversations. Input a prospect's website or profile to generate tailored, high-converting intro lines and email templates in seconds.",
+    price: "Try it free",
+    href: "/tools/cold-email-personalizer",
+  },
+  {
     title: "Proposal Follow-up Assistant",
     status: "Coming soon",
     description: "More tools launching soon",
