@@ -10,6 +10,7 @@ const FILTERS: Filter[] = [
   "All",
   "Business & Productivity",
   "Developer Boilerplates",
+  "Travel & Discovery",
 ];
 
 function ToolCard({ tool }: { tool: (typeof TOOLS)[number] }) {
