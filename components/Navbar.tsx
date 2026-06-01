@@ -8,7 +8,6 @@ import { useTheme } from "next-themes";
 const navigation = [
   { label: "Tools", href: "/tools" },
   { label: "Guides", href: "/guides" },
-  { label: "Pricing", href: "/pricing" },
 ];
 
 function ThemeToggle() {

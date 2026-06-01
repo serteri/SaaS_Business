@@ -2,29 +2,29 @@ import Link from "next/link";
 
 const features = [
   {
-    icon: "⚙️",
-    title: "Set it once",
-    body: "Connect your invoice and configure your preferences once. We automatically schedule and send reminders at the right time — no manual follow-up needed.",
+    icon: "🤖",
+    title: "Smart Automation",
+    body: "Set your reminder schedule once, and the system automatically tracks unpaid invoices and fires the right email at the right time — no manual intervention ever needed.",
   },
   {
     icon: "✍️",
-    title: "AI handles the tone",
-    body: "Our AI adapts the email tone to match the situation — friendly for first reminders, firm for final notices. Every email sounds professional and human.",
+    title: "AI-Powered Tone",
+    body: "Generates polite but firm follow-up emails that protect your client relationships. The AI adapts the language for every situation, from gentle nudges to final notices.",
   },
   {
     icon: "💸",
-    title: "Get paid faster",
-    body: "Businesses using automated reminders get paid up to 3× faster than those who chase manually. Less awkward conversations, more results.",
+    title: "Frictionless Payments",
+    body: "Integrates directly with your workflow to help you get paid 3× faster. Less time chasing, more time doing the work you love.",
   },
 ];
 
 const pricingFeatures = [
-  "10 AI-written reminder emails per month",
-  "10 active invoices tracked",
-  "50 automated reminders per month",
-  "Full email history & search",
-  "Copy, export, and send via Gmail or Outlook",
-  "Upgrade to Pro for unlimited usage",
+  "Unlimited automated reminders",
+  "AI email generator with tone control",
+  "Email integration (Gmail & Outlook)",
+  "Full invoice history & search",
+  "Copy, export, and one-click send",
+  "Priority AI generation on Pro plan",
 ];
 
 export default function InvoiceReminderWriterPage() {
@@ -50,12 +50,12 @@ export default function InvoiceReminderWriterPage() {
             >
               Try it Free
             </Link>
-            <Link
-              href="/pricing"
+            <a
+              href="#pricing"
               className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-950 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
             >
               View Pricing
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -87,7 +87,7 @@ export default function InvoiceReminderWriterPage() {
       </section>
 
       {/* ── Pricing ──────────────────────────────────────────────────────── */}
-      <section className="bg-zinc-50 px-4 py-16 sm:px-6 lg:px-8 dark:bg-zinc-900/40">
+      <section id="pricing" className="bg-zinc-50 px-4 py-16 sm:px-6 lg:px-8 dark:bg-zinc-900/40">
         <div className="mx-auto max-w-lg text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Pricing</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight">Simple, honest pricing</h2>
@@ -130,12 +130,12 @@ export default function InvoiceReminderWriterPage() {
             >
               Try it free today
             </Link>
-            <Link
-              href="/pricing"
+            <a
+              href="#pricing"
               className="inline-flex h-12 items-center justify-center rounded-full border border-violet-400 px-6 text-sm font-medium text-white transition hover:border-white"
             >
-              View all plans
-            </Link>
+              View pricing
+            </a>
           </div>
         </div>
       </section>
