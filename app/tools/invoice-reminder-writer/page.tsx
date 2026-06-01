@@ -18,15 +18,6 @@ const features = [
   },
 ];
 
-const pricingFeatures = [
-  "Unlimited automated reminders",
-  "AI email generator with tone control",
-  "Email integration (Gmail & Outlook)",
-  "Full invoice history & search",
-  "Copy, export, and one-click send",
-  "Priority AI generation on Pro plan",
-];
-
 export default function InvoiceReminderWriterPage() {
   return (
     <>
@@ -88,27 +79,130 @@ export default function InvoiceReminderWriterPage() {
 
       {/* ── Pricing ──────────────────────────────────────────────────────── */}
       <section id="pricing" className="bg-zinc-50 px-4 py-16 sm:px-6 lg:px-8 dark:bg-zinc-900/40">
-        <div className="mx-auto max-w-lg text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Pricing</p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">Simple, honest pricing</h2>
-          <div className="mt-8 rounded-3xl border border-violet-300 bg-violet-50/60 p-8 text-left dark:border-violet-800 dark:bg-violet-950/30">
-            <p className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              From $9<span className="text-lg font-normal text-zinc-500">/month</span>
+        <div className="mx-auto max-w-5xl">
+          {/* heading */}
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Pricing</p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Simple, honest pricing</h2>
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+              Start free. Upgrade when you need more power.
             </p>
-            <ul className="mt-6 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
-              {pricingFeatures.map((feature) => (
-                <li key={feature} className="flex items-start gap-2">
-                  <span className="mt-0.5 font-semibold text-violet-600">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/signin"
-              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-            >
-              Get started free
-            </Link>
+          </div>
+
+          {/* tier cards */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Basic / Free Trial */}
+            <div className="rounded-3xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
+              <p className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Basic / Free Trial</p>
+              <p className="mt-4 text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                $0
+                <span className="text-base font-normal text-zinc-500">/month</span>
+              </p>
+              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Great for getting started with occasional reminders.</p>
+              <ul className="mt-6 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+                {[
+                  "3 manual reminders / month",
+                  "Basic email templates",
+                  "Standard support",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <span className="mt-0.5 font-semibold text-violet-600">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/signin"
+                className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full border border-zinc-300 bg-transparent px-5 text-sm font-medium text-zinc-950 transition hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
+              >
+                Get Started
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div className="relative rounded-3xl border-2 border-violet-500 bg-white p-8 shadow-[0_0_32px_rgba(139,92,246,0.18)] dark:bg-zinc-900">
+              {/* Most Popular badge */}
+              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex rounded-full bg-violet-600 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow">
+                Most Popular
+              </span>
+              <p className="text-sm font-semibold uppercase tracking-wide text-violet-600">Pro</p>
+              <p className="mt-4 text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                $9
+                <span className="text-base font-normal text-zinc-500">/month</span>
+              </p>
+              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Everything you need to get paid without the hassle.</p>
+              <ul className="mt-6 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+                {[
+                  "Unlimited automated reminders",
+                  "AI tone customisation",
+                  "Gmail & Outlook integration",
+                  "Full invoice history & search",
+                  "Copy, export, and one-click send",
+                  "Priority support",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <span className="mt-0.5 font-semibold text-violet-600">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/signin"
+                className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-full bg-violet-600 px-5 text-sm font-medium text-white transition hover:bg-violet-500"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+
+          {/* comparison table */}
+          <div className="mt-14">
+            <h3 className="mb-6 text-center text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">
+              Compare features
+            </h3>
+            <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                    <th className="px-6 py-4 text-left font-semibold text-zinc-950 dark:text-white">Feature</th>
+                    <th className="px-6 py-4 text-center font-semibold text-zinc-950 dark:text-white">Basic</th>
+                    <th className="px-6 py-4 text-center font-semibold text-violet-600">Pro</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { feature: "Automated Follow-ups",       basic: false, pro: true  },
+                    { feature: "AI Tone Adjustment",         basic: false, pro: true  },
+                    { feature: "Custom Branding",            basic: false, pro: true  },
+                    { feature: "Integration (Gmail/Outlook)",basic: false, pro: true  },
+                    { feature: "Priority Support",           basic: false, pro: true  },
+                  ].map(({ feature, basic, pro }, idx) => (
+                    <tr
+                      key={feature}
+                      className={`border-b border-zinc-200 last:border-0 dark:border-zinc-800 ${
+                        idx % 2 === 0 ? "bg-zinc-50 dark:bg-zinc-900/60" : "bg-white dark:bg-zinc-900"
+                      }`}
+                    >
+                      <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300">{feature}</td>
+                      <td className="px-6 py-4 text-center">
+                        {basic ? (
+                          <span className="font-semibold text-violet-600">✓</span>
+                        ) : (
+                          <span className="text-zinc-400 dark:text-zinc-600">–</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {pro ? (
+                          <span className="font-semibold text-violet-600">✓</span>
+                        ) : (
+                          <span className="text-zinc-400 dark:text-zinc-600">–</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
