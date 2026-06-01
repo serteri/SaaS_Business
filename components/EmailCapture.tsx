@@ -7,7 +7,7 @@ export function EmailCapture() {
           Get notified when new tools launch
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-zinc-300 sm:text-base">
-          Be first in line for new AI tools designed for freelancers, consultants, and small teams.
+          Be first in line when we launch new AI tools, from business automation to smart travel.
         </p>
 
         <a

@@ -11,10 +11,10 @@ export function Hero() {
       <div className="mx-auto max-w-4xl py-12 text-center sm:py-16 lg:py-20 animate-fade-up">
         <p className="mb-5 text-sm font-medium uppercase tracking-[0.25em] text-violet-600">Ongonix</p>
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl lg:text-7xl dark:text-white">
-          AI tools built for how freelancers work
+          A suite of AI tools to build, work, and travel smarter.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg dark:text-zinc-300">
-          Stop wasting time on emails, reminders, and admin. Let AI handle the boring parts.
+          Discover our growing ecosystem of AI-powered applications designed to optimize your workflows, simplify your travels, and automate the boring parts.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
