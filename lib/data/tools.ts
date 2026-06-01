@@ -22,9 +22,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/invoice-reminder-writer",
   },
   {
-    title: "Flight Agent",
+    title: "Flight Agent (Guardian Mode)",
     description:
-      "AI-powered travel assistant. Discover optimized flight routes, manage itineraries, and track real-time travel data effortlessly.",
+      "Monitor every booking, react before disruption hits, and manage EU261 compensation claims automatically.",
     category: "Travel & Discovery",
     lifecycle: "LIVE",
     price: "$0",

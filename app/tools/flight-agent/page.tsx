@@ -2,16 +2,16 @@ import Link from "next/link";
 
 const features = [
   {
-    title: "Smart Routing",
-    body: "AI analyzes thousands of combinations to find cheaper, unconventional layovers and routing opportunities most travelers miss.",
+    title: "Flight Monitoring",
+    body: "Track booked trips on scheduled checks and keep a transparent history of changes.",
   },
   {
-    title: "Automated Itineraries",
-    body: "Say goodbye to manual planning. Get personalized travel schedules mapped out in seconds.",
+    title: "Disruption Alerts",
+    body: "Receive focused notifications for delays, cancellations, and schedule-risk drift.",
   },
   {
-    title: "Real-Time Tracking",
-    body: "Monitor route changes, timing windows, and live travel signals in one streamlined dashboard.",
+    title: "EU261 Compensation",
+    body: "Generate claim-ready documents and move faster when a trip is disrupted.",
   },
 ];
 
@@ -23,9 +23,9 @@ export default function FlightAgentPage() {
           <span className="inline-flex rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
             Portfolio Showcase
           </span>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">Flight Agent</h1>
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">FlightAgent Guardian</h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg dark:text-zinc-300">
-            The smartest way to book and manage travel, powered by AI.
+            Monitor every booking, react before disruption hits.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
@@ -34,7 +34,7 @@ export default function FlightAgentPage() {
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-6 text-sm font-medium text-white transition hover:bg-violet-500"
             >
-              Visit flightagent.io
+              Open Guardian (flightagent.io)
             </a>
             <Link
               href="/tools"
