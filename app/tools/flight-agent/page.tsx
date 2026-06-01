@@ -6,12 +6,12 @@ const features = [
     body: "AI analyzes thousands of combinations to find cheaper, unconventional layovers and routing opportunities most travelers miss.",
   },
   {
-    title: "Real-Time Data",
-    body: "Direct integrations with modern flight APIs (like Duffel) deliver instant availability, dynamic fares, and accurate route intelligence.",
+    title: "Automated Itineraries",
+    body: "Say goodbye to manual planning. Get personalized travel schedules mapped out in seconds.",
   },
   {
-    title: "Automated Itineraries",
-    body: "Say goodbye to manual planning. Generate personalized travel schedules in seconds, aligned to budget, comfort, and timing preferences.",
+    title: "Real-Time Tracking",
+    body: "Monitor route changes, timing windows, and live travel signals in one streamlined dashboard.",
   },
 ];
 
@@ -25,7 +25,7 @@ export default function FlightAgentPage() {
           </span>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">Flight Agent</h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg dark:text-zinc-300">
-            The smartest way to book travel. Powered by AI and modern flight infrastructure.
+            The smartest way to book and manage travel, powered by AI.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a

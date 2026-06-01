@@ -24,12 +24,6 @@ export function Hero() {
           >
             Browse tools
           </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-6 text-sm font-medium text-zinc-950 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-          >
-            See pricing
-          </Link>
         </div>
       </div>
     </section>

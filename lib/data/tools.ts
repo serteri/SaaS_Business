@@ -24,7 +24,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     title: "Flight Agent",
     description:
-      "AI-powered travel assistant. Find hidden flight routes, optimize layovers, and track real-time prices.",
+      "AI-powered travel assistant. Discover optimized flight routes, manage itineraries, and track real-time travel data effortlessly.",
     category: "Travel & Discovery",
     lifecycle: "LIVE",
     price: "$0",
