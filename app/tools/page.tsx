@@ -1,12 +1,22 @@
 import Link from "next/link";
 
-const businessTools = [
+type Tool = {
+  title: string;
+  status: "Live" | "Coming soon";
+  description: string;
+  price?: string;
+  href?: string;
+  cardHref?: string;
+};
+
+const businessTools: Tool[] = [
   {
     title: "Invoice Reminder Writer",
     status: "Live",
     description: "Automated payment reminder emails. Set it once, we handle the rest.",
     price: "From $9/month",
     href: "/signin",
+    cardHref: "/tools/invoice-reminder-writer",
   },
   {
     title: "AI Cold Email Personalizer",
@@ -15,6 +25,7 @@ const businessTools = [
       "Transform cold outreach into warm conversations. Input a prospect's website or profile to generate tailored, high-converting intro lines and email templates in seconds.",
     price: "Try it free",
     href: "/tools/cold-email-personalizer",
+    cardHref: "/tools/cold-email-personalizer",
   },
   {
     title: "Proposal Follow-up Assistant",
@@ -31,17 +42,59 @@ const businessTools = [
     status: "Coming soon",
     description: "More tools launching soon",
   },
-] as const;
+];
 
-const travelTools = [
+const travelTools: Tool[] = [
   {
     title: "FlightAgent",
     status: "Live",
     description: "AI-powered travel assistant. Find and book the best flight routes in seconds.",
     price: "Try it free",
     href: "https://flightagent.io",
+    cardHref: "https://flightagent.io",
   },
-] as const;
+];
+
+function ToolCard({ tool }: { tool: Tool }) {
+  const article = (
+    <article
+      className={`rounded-3xl border p-8 transition-all ${
+        tool.status === "Live"
+          ? "border-violet-300 bg-violet-50/60 dark:border-violet-800 dark:bg-violet-950/30 cursor-pointer hover:shadow-lg hover:border-violet-500 dark:hover:border-violet-400"
+          : "border-zinc-200 bg-zinc-100/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900"
+      }`}
+    >
+      <span
+        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+          tool.status === "Live"
+            ? "bg-violet-600 text-white"
+            : "bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
+        }`}
+      >
+        {tool.status}
+      </span>
+      <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h3>
+      <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tool.description}</p>
+
+      {tool.status === "Live" ? (
+        <>
+          <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
+          <span className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200">
+            Try it free
+          </span>
+        </>
+      ) : null}
+    </article>
+  );
+
+  return tool.cardHref ? (
+    <Link href={tool.cardHref} className="block">
+      {article}
+    </Link>
+  ) : (
+    <div>{article}</div>
+  );
+}
 
 export default function ToolsPage() {
   return (
@@ -56,38 +109,7 @@ export default function ToolsPage() {
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">Business &amp; Productivity</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {businessTools.map((tool) => (
-              <article
-                key={tool.title}
-                className={`rounded-3xl border p-8 ${
-                  tool.status === "Live"
-                    ? "border-violet-300 bg-violet-50/60 dark:border-violet-800 dark:bg-violet-950/30"
-                    : "border-zinc-200 bg-zinc-100/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900"
-                }`}
-              >
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                    tool.status === "Live"
-                      ? "bg-violet-600 text-white"
-                      : "bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
-                  }`}
-                >
-                  {tool.status}
-                </span>
-                <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tool.description}</p>
-
-                {tool.status === "Live" ? (
-                  <>
-                    <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
-                    <Link
-                      href={tool.href ?? "/signin"}
-                      className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                    >
-                      Try it free
-                    </Link>
-                  </>
-                ) : null}
-              </article>
+              <ToolCard key={tool.title} tool={tool} />
             ))}
           </div>
         </div>
@@ -96,38 +118,7 @@ export default function ToolsPage() {
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">Travel &amp; Discovery</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {travelTools.map((tool) => (
-              <article
-                key={tool.title}
-                className={`rounded-3xl border p-8 ${
-                  tool.status === "Live"
-                    ? "border-violet-300 bg-violet-50/60 dark:border-violet-800 dark:bg-violet-950/30"
-                    : "border-zinc-200 bg-zinc-100/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900"
-                }`}
-              >
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                    tool.status === "Live"
-                      ? "bg-violet-600 text-white"
-                      : "bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
-                  }`}
-                >
-                  {tool.status}
-                </span>
-                <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tool.description}</p>
-
-                {tool.status === "Live" ? (
-                  <>
-                    <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
-                    <Link
-                      href={tool.href ?? "/signin"}
-                      className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                    >
-                      Try it free
-                    </Link>
-                  </>
-                ) : null}
-              </article>
+              <ToolCard key={tool.title} tool={tool} />
             ))}
           </div>
         </div>
