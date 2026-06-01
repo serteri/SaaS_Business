@@ -15,14 +15,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice Reminder Writer",
+  title: "Ongonix | AI Product Studio",
   description:
-    "AI-powered payment reminder emails for freelancers and small businesses.",
+    "Discover our growing ecosystem of independent AI applications designed to optimize your workflows, simplify your travels, and automate your tasks.",
   metadataBase: new URL("https://ongonix.com"),
   openGraph: {
-    title: "Invoice Reminder Writer",
+    title: "Ongonix | AI Product Studio",
     description:
-      "Get paid faster. Write better payment reminders.",
+      "Discover our growing ecosystem of independent AI applications designed to optimize your workflows, simplify your travels, and automate your tasks.",
     type: "website",
   },
 };
