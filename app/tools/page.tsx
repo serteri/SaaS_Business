@@ -2,107 +2,42 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { TOOLS, type ToolCategory } from "@/lib/data/tools";
 
-type Filter = "All" | "Business & Productivity" | "Developer Kits";
-
-type Tool = {
-  title: string;
-  status: "Live" | "Coming soon";
-  description: string;
-  category: Exclude<Filter, "All">;
-  price?: string;
-  actionLabel?: string;
-  cardHref?: string;
-};
-
-const allTools: Tool[] = [
-  {
-    title: "Invoice Reminder Writer",
-    status: "Live",
-    description: "Automated payment reminder emails. Set it once, we handle the rest.",
-    category: "Business & Productivity",
-    price: "From $9/month",
-    cardHref: "/tools/invoice-reminder-writer",
-  },
-  {
-    title: "Proposal Follow-up Assistant",
-    status: "Coming soon",
-    description: "More tools launching soon",
-    category: "Business & Productivity",
-  },
-  {
-    title: "Client Intake Copilot",
-    status: "Coming soon",
-    description: "More tools launching soon",
-    category: "Business & Productivity",
-  },
-  {
-    title: "Project Update Writer",
-    status: "Coming soon",
-    description: "More tools launching soon",
-    category: "Business & Productivity",
-  },
-  {
-    title: "Claude RAG SaaS Starter Kit",
-    status: "Live",
-    description:
-      "Launch your AI app in hours. A production-ready Next.js boilerplate featuring Claude API, Vector DB integration, and vertical templates.",
-    category: "Developer Kits",
-    price: "$149",
-    actionLabel: "Join Waitlist",
-    cardHref: "/tools/claude-rag-starter-kit",
-  },
-  {
-    title: "AI API Boilerplate",
-    status: "Coming soon",
-    description: "More developer kits launching soon",
-    category: "Developer Kits",
-  },
-];
+type Filter = "All" | ToolCategory;
 
 const FILTERS: Filter[] = [
   "All",
   "Business & Productivity",
-  "Developer Kits",
+  "Developer Boilerplates",
 ];
 
-function ToolCard({ tool }: { tool: Tool }) {
+function ToolCard({ tool }: { tool: (typeof TOOLS)[number] }) {
   const article = (
     <article
-      className={`h-full rounded-3xl border p-8 transition-all ${
-        tool.status === "Live"
-          ? "cursor-pointer border-violet-300 bg-violet-50/60 hover:border-violet-500 hover:shadow-lg dark:border-violet-800 dark:bg-violet-950/30 dark:hover:border-violet-400"
-          : "border-zinc-200 bg-zinc-100/70 opacity-75 dark:border-zinc-800 dark:bg-zinc-900"
-      }`}
+      className="h-full cursor-pointer rounded-3xl border border-violet-300 bg-violet-50/60 p-8 transition-all hover:border-violet-500 hover:shadow-lg dark:border-violet-800 dark:bg-violet-950/30 dark:hover:border-violet-400"
     >
-      <span
-        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-          tool.status === "Live"
-            ? "bg-violet-600 text-white"
-            : "bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
-        }`}
-      >
-        {tool.status}
-      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          {tool.lifecycle === "LIVE" ? "Live" : "Planned"}
+        </span>
+        <span className="inline-flex rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+          {tool.category}
+        </span>
+      </div>
       <h3 className="mt-5 text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{tool.title}</h3>
       <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tool.description}</p>
-      {tool.status === "Live" && (
-        <>
-          <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
-          <span className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200">
-            {tool.actionLabel ?? "Try it free"}
-          </span>
-        </>
-      )}
+      <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
+      <span className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200">
+        {tool.actionLabel}
+      </span>
     </article>
   );
 
-  return tool.cardHref ? (
-    <Link href={tool.cardHref} className="block">
+  return (
+    <Link href={tool.href} className="block">
       {article}
     </Link>
-  ) : (
-    <div>{article}</div>
   );
 }
 
@@ -110,7 +45,7 @@ export default function ToolsPage() {
   const [activeFilter, setActiveFilter] = useState<Filter>("All");
 
   const visibleTools =
-    activeFilter === "All" ? allTools : allTools.filter((t) => t.category === activeFilter);
+    activeFilter === "All" ? TOOLS : TOOLS.filter((t) => t.category === activeFilter);
 
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
