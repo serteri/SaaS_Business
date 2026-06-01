@@ -58,6 +58,18 @@ export async function POST(request: Request) {
     }
 
     const input = parsed.data;
+
+    // ── Tier-aware model & prompt selection ───────────────────────────────
+    const isPro = effectivePlan === Plan.PRO;
+
+    const model = isPro
+      ? "claude-sonnet-4-20250514"   // premium, highly capable model for Pro
+      : "claude-3-haiku-20240307";   // faster, cost-efficient model for Free / Basic
+
+    const systemPrompt = isPro
+      ? "You are an expert B2B collections specialist. Analyze the provided context (industry, past communication style, tone). Write a highly psychological, personalized, and conversion-optimized follow-up email that perfectly mimics the user's natural tone while securing the payment. Be persuasive yet professional. Always include all invoice details provided."
+      : `You are an assistant. Write a standard, polite invoice reminder for a delayed payment of ${input.amount}. Keep it professional and concise. Always include the invoice details provided.`;
+
     const prompt = `Client Name: ${input.clientName}
 Invoice Number: ${input.invoiceNumber}
 Amount Owed: ${input.amount}
@@ -71,21 +83,24 @@ Payment Link: ${input.paymentLink || "Not provided"}
 Write one complete email ready to send.`;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 800,
-      system:
-        "You are an expert at writing professional payment reminder emails. Write clear, professional emails that maintain the client relationship while firmly requesting payment. Never be rude. Always include the invoice details provided.",
+      model,
+      max_tokens: isPro ? 1200 : 800,
+      system: systemPrompt,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const generatedEmail = response.content
+    const rawEmail = response.content
       .map((item) => (item.type === "text" ? item.text : ""))
       .join("\n")
       .trim();
 
-    if (!generatedEmail) {
+    if (!rawEmail) {
       return NextResponse.json({ error: "No email generated." }, { status: 502 });
     }
+
+    // ── Branding watermark (Free & Basic only) ────────────────────────────
+    const branding = `\n\n---\nSent via <a href="https://ongonix.com" style="color:gray;">Ongonix</a>`;
+    const generatedEmail = isPro ? rawEmail : `${rawEmail}${branding}`;
 
     const created = await prisma.emailGeneration.create({
       data: {
