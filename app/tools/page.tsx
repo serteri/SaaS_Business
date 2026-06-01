@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-type Filter = "All" | "Business & Productivity" | "Developer Boilerplates";
+type Filter = "All" | "Business & Productivity" | "Developer Kits";
 
 type Tool = {
   title: string;
@@ -11,6 +11,7 @@ type Tool = {
   description: string;
   category: Exclude<Filter, "All">;
   price?: string;
+  actionLabel?: string;
   cardHref?: string;
 };
 
@@ -22,15 +23,6 @@ const allTools: Tool[] = [
     category: "Business & Productivity",
     price: "From $9/month",
     cardHref: "/tools/invoice-reminder-writer",
-  },
-  {
-    title: "AI Cold Email Personalizer",
-    status: "Live",
-    description:
-      "Transform cold outreach into warm conversations. Input a prospect's website or profile to generate tailored, high-converting intro lines and email templates in seconds.",
-    category: "Business & Productivity",
-    price: "Try it free",
-    cardHref: "/tools/cold-email-personalizer",
   },
   {
     title: "Proposal Follow-up Assistant",
@@ -54,23 +46,24 @@ const allTools: Tool[] = [
     title: "Claude RAG SaaS Starter Kit",
     status: "Live",
     description:
-      "Production-ready Next.js + Anthropic scaffold with RAG pipelines, auth, and Stripe billing baked in. Ship your AI SaaS in days, not months.",
-    category: "Developer Boilerplates",
-    price: "Try it free",
-    cardHref: "/tools/claude-rag-starter",
+      "Launch your AI app in hours. A production-ready Next.js boilerplate featuring Claude API, Vector DB integration, and vertical templates.",
+    category: "Developer Kits",
+    price: "$149",
+    actionLabel: "Join Waitlist",
+    cardHref: "/tools/claude-rag-starter-kit",
   },
   {
     title: "AI API Boilerplate",
     status: "Coming soon",
     description: "More developer kits launching soon",
-    category: "Developer Boilerplates",
+    category: "Developer Kits",
   },
 ];
 
 const FILTERS: Filter[] = [
   "All",
   "Business & Productivity",
-  "Developer Boilerplates",
+  "Developer Kits",
 ];
 
 function ToolCard({ tool }: { tool: Tool }) {
@@ -97,7 +90,7 @@ function ToolCard({ tool }: { tool: Tool }) {
         <>
           <p className="mt-5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tool.price}</p>
           <span className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200">
-            Try it free
+            {tool.actionLabel ?? "Try it free"}
           </span>
         </>
       )}
