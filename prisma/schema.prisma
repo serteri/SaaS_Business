@@ -22,6 +22,11 @@ enum SubscriptionStatus {
   PAST_DUE
 }
 
+enum PlanTier {
+  FREE
+  PRO
+}
+
 model User {
   id                 String               @id @default(cuid())
   email              String               @unique
@@ -30,6 +35,8 @@ model User {
   passwordHash       String?
   image              String?
   stripeCustomerId   String?              @unique
+  stripeSubscriptionId String?             @unique
+  planTier           PlanTier             @default(FREE)
   subscriptionStatus SubscriptionStatus   @default(FREE)
   plan               Plan                 @default(FREE)
   createdAt          DateTime             @default(now())
@@ -37,6 +44,7 @@ model User {
   invoices           Invoice[]
   usageTracking      UsageTracking[]
   documents          Document[]
+  ragChatMessages    RagChatMessage[]
 }
 
 model EmailGeneration {
@@ -136,4 +144,13 @@ model Waitlist {
   email       String   @unique
   productName String   @default("Claude RAG Kit")
   createdAt   DateTime @default(now())
+}
+
+model RagChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

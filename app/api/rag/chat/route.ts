@@ -1,37 +1,56 @@
+import OpenAI from "openai";
+import { streamText } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { getAnthropicClient } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 
 const chatSchema = z.object({
-  question: z.string().min(1),
-  topK: z.number().int().min(1).max(12).optional().default(5),
+  messages: z.array(
+    z.object({
+      role: z.enum(["system", "user", "assistant", "tool"]),
+      content: z.any(),
+    }),
+  ),
 });
 
-const QUERY_EMBED_DIM = 8;
-
-function mockEmbeddingFromText(text: string): number[] {
-  // Scaffold placeholder. Swap this for your embedding provider in production.
-  const values = new Array(QUERY_EMBED_DIM).fill(0);
-  for (let i = 0; i < text.length; i += 1) {
-    values[i % QUERY_EMBED_DIM] += text.charCodeAt(i) % 89;
+function extractTextFromContent(content: unknown): string {
+  if (typeof content === "string") {
+    return content;
   }
-  return values.map((v) => Number((v / Math.max(text.length, 1)).toFixed(6)));
-}
 
-function toVectorLiteral(values: number[]) {
-  return `[${values.join(",")}]`;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") {
+          return part;
+        }
+
+        if (part && typeof part === "object" && "text" in part && typeof (part as { text?: unknown }).text === "string") {
+          return (part as { text: string }).text;
+        }
+
+        return "";
+      })
+      .join(" ")
+      .trim();
+  }
+
+  if (content && typeof content === "object" && "text" in content && typeof (content as { text?: unknown }).text === "string") {
+    return (content as { text: string }).text;
+  }
+
+  return "";
 }
 
 /**
  * POST /api/rag/chat
  *
  * Developer guide:
- * 1) Builds a query embedding from the user's question.
- * 2) Runs pgvector similarity search in Neon (DocumentEmbedding.embedding <=> query_vector).
- * 3) Sends retrieved context + user question to Claude.
- * 4) Streams the generated answer back to the client.
+ * 1) Accepts the chat messages array from the client.
+ * 2) Streams the response from Anthropic Claude through the Vercel AI SDK.
+ * 3) Returns a data stream response that works seamlessly with `useChat`.
  *
  * This file is intentionally verbose as starter-kit documentation for buyers.
  */
@@ -48,13 +67,59 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid chat payload." }, { status: 400 });
     }
 
-    const anthropic = getAnthropicClient();
-    if (!anthropic) {
+    const startOfDayUtc = new Date();
+    startOfDayUtc.setUTCHours(0, 0, 0, 0);
+
+    const [user, todayChatCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { planTier: true },
+      }),
+      prisma.ragChatMessage.count({
+        where: {
+          userId: session.user.id,
+          createdAt: { gte: startOfDayUtc },
+        },
+      }),
+    ]);
+
+    if ((user?.planTier ?? "FREE") === "FREE" && todayChatCount >= 10) {
+      return NextResponse.json({ error: "Free plan daily chat limit reached. Please upgrade to Pro." }, { status: 403 });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: "Missing OPENAI_API_KEY." }, { status: 500 });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: "Missing ANTHROPIC_API_KEY." }, { status: 500 });
     }
 
-    const { question, topK } = parsed.data;
-    const queryEmbedding = toVectorLiteral(mockEmbeddingFromText(question));
+    const latestUserMessage = [...parsed.data.messages].reverse().find((message) => message.role === "user");
+    const latestUserText = latestUserMessage ? extractTextFromContent(latestUserMessage.content) : "";
+
+    if (!latestUserText) {
+      return NextResponse.json({ error: "No user message found for retrieval." }, { status: 400 });
+    }
+
+    await prisma.ragChatMessage.create({
+      data: {
+        userId: session.user.id,
+      },
+    });
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const embeddingResponse = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: latestUserText,
+    });
+
+    const vector = embeddingResponse.data[0]?.embedding;
+    if (!vector) {
+      return NextResponse.json({ error: "Failed to generate query embedding." }, { status: 502 });
+    }
+
+    const vectorLiteral = `[${vector.join(",")}]`;
 
     type MatchRow = {
       chunkText: string;
@@ -62,70 +127,31 @@ export async function POST(request: Request) {
       distance: number;
     };
 
-    // Vector similarity search against pgvector in Neon.
-    // Smaller distance = more relevant chunk.
-    const matches = await prisma.$queryRawUnsafe<MatchRow[]>(
-      `
+    const matches = await prisma.$queryRaw<MatchRow[]>`
       SELECT
         de."chunkText" AS "chunkText",
         d."title" AS "documentTitle",
-        (de."embedding" <=> $1::vector) AS "distance"
+        de."embedding" <=> ${vectorLiteral}::vector AS "distance"
       FROM "DocumentEmbedding" de
       INNER JOIN "Document" d ON d."id" = de."documentId"
-      WHERE d."userId" = $2
-      ORDER BY de."embedding" <=> $1::vector ASC
-      LIMIT $3
-      `,
-      queryEmbedding,
-      session.user.id,
-      topK,
+      WHERE d."userId" = ${session.user.id}
+      ORDER BY de."embedding" <=> ${vectorLiteral}::vector ASC
+      LIMIT 5
+    `;
+
+    const context = matches.length
+      ? matches
+          .map((match, index) => `Context ${index + 1} from ${match.documentTitle} (distance ${match.distance.toFixed(4)}):\n${match.chunkText}`)
+          .join("\n\n")
+      : "No relevant context was retrieved from the knowledge base.";
+
+    const result = streamText({
+      model: anthropic("claude-3-5-sonnet-20240620"),
+      messages: parsed.data.messages,
+      system: `You are a helpful assistant. Use the following retrieved context to answer the user's question. Context: ${context}`,
     );
 
-    const context = matches
-      .map((m, idx) => `Source ${idx + 1} (${m.documentTitle}, distance=${m.distance.toFixed(4)}):\n${m.chunkText}`)
-      .join("\n\n");
-
-    const llm = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1200,
-      system:
-        "You are a RAG assistant. Use provided context first. If context is insufficient, state uncertainty clearly and suggest what additional data is needed.",
-      messages: [
-        {
-          role: "user",
-          content: `Question:\n${question}\n\nRetrieved Context:\n${context || "No context found."}`,
-        },
-      ],
-    });
-
-    const finalText = llm.content
-      .map((item) => (item.type === "text" ? item.text : ""))
-      .join("\n")
-      .trim();
-
-    if (!finalText) {
-      return NextResponse.json({ error: "No chat response generated." }, { status: 502 });
-    }
-
-    // Stream response to client for chat UX (token-like chunks).
-    const encoder = new TextEncoder();
-    const chunks = finalText.match(/.{1,80}/g) ?? [finalText];
-
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        for (const chunk of chunks) {
-          controller.enqueue(encoder.encode(chunk));
-        }
-        controller.close();
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-      },
-    });
+    return result.toDataStreamResponse();
   } catch {
     return NextResponse.json({ error: "RAG chat pipeline failed." }, { status: 500 });
   }
