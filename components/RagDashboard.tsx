@@ -284,7 +284,7 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
                     className={`max-w-3xl rounded-3xl border p-5 ${message.role === "user" ? "ml-auto border-emerald-400/20 bg-emerald-400/10" : "border-zinc-800 bg-white/5"}`}
                   >
                     <p className="mb-3 text-xs uppercase tracking-[0.25em] text-zinc-500">{message.role}</p>
-                    <div className="space-y-3 text-sm text-zinc-200">{renderMessageText(message.content)}</div>
+                    <div className="space-y-3 text-sm text-zinc-200">{renderMessageText(message.parts.filter((p) => p.type === "text").map((p) => (p as { type: "text"; text: string }).text).join("\n\n"))}</div>
                   </div>
                 ))
               )}
