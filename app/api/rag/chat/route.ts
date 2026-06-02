@@ -149,7 +149,7 @@ export async function POST(request: Request) {
       model: anthropic("claude-3-5-sonnet-20240620"),
       messages: parsed.data.messages,
       system: `You are a helpful assistant. Use the following retrieved context to answer the user's question. Context: ${context}`,
-    );
+    });
 
     return result.toDataStreamResponse();
   } catch {

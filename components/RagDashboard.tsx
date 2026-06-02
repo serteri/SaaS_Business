@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
 import { IconSend, IconUpload } from "@tabler/icons-react";
 import Link from "next/link";
 
@@ -214,7 +214,7 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
             </div>
 
             <Link
-              href="/pricing"
+              href="/dashboard/settings"
               className="inline-flex w-full items-center justify-center rounded-2xl border border-emerald-400/50 bg-emerald-400/15 px-4 py-3 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/25"
             >
               Manage Subscription
@@ -328,7 +328,7 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/pricing"
+                href="/dashboard/settings"
                 className="inline-flex items-center justify-center rounded-2xl bg-emerald-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-emerald-300"
               >
                 Manage Subscription
