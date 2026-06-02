@@ -93,7 +93,7 @@ export async function extractTextFromUpload(file: File): Promise<UploadedTextSou
 
   if (isPdf) {
     const pdfParseModule = await import("pdf-parse");
-    const pdfParse = (pdfParseModule.default ?? pdfParseModule) as (buffer: Buffer) => Promise<{ text: string }>;
+    const pdfParse = pdfParseModule as unknown as (buffer: Buffer) => Promise<{ text: string }>;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // pdf-parse reads raw PDF bytes and returns the extracted page text.
