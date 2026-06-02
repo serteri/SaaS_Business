@@ -151,7 +151,7 @@ export async function POST(request: Request) {
       system: `You are a helpful assistant. Use the following retrieved context to answer the user's question. Context: ${context}`,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch {
     return NextResponse.json({ error: "RAG chat pipeline failed." }, { status: 500 });
   }
