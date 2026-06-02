@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
+import { TextStreamChatTransport } from "ai";
 import { IconSend, IconUpload } from "@tabler/icons-react";
 import Link from "next/link";
 
@@ -63,7 +64,7 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
   const [input, setInput] = useState("");
 
   const { messages, sendMessage, status } = useChat({
-    api: "/api/rag/chat",
+    transport: new TextStreamChatTransport({ api: "/api/rag/chat" }),
     onError(error) {
       if (error.message.includes("Free plan") || error.message.includes("limit")) {
         setUpgradeMessage("Free plan daily chat limit reached. Please upgrade to Pro.");
