@@ -60,15 +60,19 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
   const [upgradeMessage, setUpgradeMessage] = useState("Free plan limit reached. Please upgrade to Pro.");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const [input, setInput] = useState("");
+
+  const { messages, sendMessage, status } = useChat({
     api: "/api/rag/chat",
-    onResponse(response) {
-      if (response.status === 403) {
+    onError(error) {
+      if (error.message.includes("Free plan") || error.message.includes("limit")) {
         setUpgradeMessage("Free plan daily chat limit reached. Please upgrade to Pro.");
         setShowUpgradeModal(true);
       }
     },
   });
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   useEffect(() => {
     setIsChatReady(true);
@@ -289,19 +293,16 @@ export function RagDashboard({ initialDocuments }: RagDashboardProps) {
           <form
             className="sticky bottom-0 border-t border-zinc-800 bg-zinc-950/95 pt-4 backdrop-blur"
             onSubmit={(event) => {
-              if (showUpgradeModal) {
-                event.preventDefault();
-                return;
-              }
-
               event.preventDefault();
-              void handleSubmit(event);
+              if (showUpgradeModal || !input.trim()) return;
+              void sendMessage({ text: input });
+              setInput("");
             }}
           >
             <div className="flex items-end gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/80 p-3 shadow-lg shadow-black/20">
               <textarea
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask something about your knowledge base..."
                 rows={2}
                 className="max-h-40 min-h-[48px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
