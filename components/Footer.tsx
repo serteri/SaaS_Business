@@ -1,10 +1,9 @@
 import Link from "next/link";
 
 const footerLinks = [
-  { label: "Home", href: "/" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Sign in", href: "/signin" },
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "All Tools", href: "/tools" },
+  { label: "Claude RAG Kit", href: "/tools/claude-rag-starter-kit" },
+  { label: "Invoice Writer", href: "/tools/invoice-reminder-writer" },
 ];
 
 function SocialIcon({ label }: { label: string }) {
@@ -27,7 +26,7 @@ export function Footer() {
             Ongonix
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-400">
-            AI-powered invoicing communication tools for freelancers and small businesses.
+            A premium suite of AI tools and developer boilerplates to build, work, and travel smarter.
           </p>
         </div>
 
